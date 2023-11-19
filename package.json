@@ -1,0 +1,62 @@
+{
+  "name": "unix-js",
+  "module": "src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^1.4.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "bun-types": "latest",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "bundle": "bun run bundle:build && bun run bundle:types",
+    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
+    "bundle:types": "tsc --emitDeclarationOnly --project tsconfig.types.json"
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "@stylistic"
+    ],
+    "extends": [
+      "eslint:all",
+      "plugin:@typescript-eslint/all"
+    ],
+    "env": {
+      "node": true
+    },
+    "rules": {
+      "semi": ["error", "never"],
+      "@typescript-eslint/semi": ["error", "never"],
+      "one-var": ["error", "never"],
+      "no-console": ["warn"],
+      "quotes": ["error", "single"],
+      "default-case": ["off"],
+      "sort-keys": ["off"],
+      "multiline-comment-style": ["off"],
+      "capitalized-comments": ["off"],
+      "@typescript-eslint/quotes": ["error", "single"],
+      "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
+      "@typescript-eslint/object-curly-spacing": ["error", "always"],
+      "@typescript-eslint/lines-between-class-members": ["off"],
+      "@typescript-eslint/space-before-function-paren": ["error", "never"]
+    }
+  }
+}
