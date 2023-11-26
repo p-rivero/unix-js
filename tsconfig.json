@@ -15,10 +15,15 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
-    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      // Root path
+      "@/*": ["*"],
+    },
     "types": [
       "bun-types" // add Bun global
     ]
   },
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "tsconfig.json"],
 }
