@@ -1,15 +1,26 @@
-export abstract class FakeTermError extends Error { }
+export abstract class FakeTermError extends Error {
+    public readonly errno: number
+    public readonly linuxName: string
+    public readonly linuxDescription: string
+
+    protected constructor(message: string, errno: number, linuxName: string, linuxDescription: string) {
+        super(message)
+        this.errno = errno
+        this.linuxName = linuxName
+        this.linuxDescription = linuxDescription
+    }
+}
 
 export class InternalError extends FakeTermError {
     public constructor(message: string) {
-        super(message)
+        super(message, 0, 'EINTERNAL', 'Internal error')
         this.name = 'InternalError'
     }
 }
 
-export class IncorrectDeclaration extends FakeTermError {
+export class InvalidArgument extends FakeTermError {
     public constructor(message: string) {
-        super(`Incorrect parameter in FakeTerm initializer: ${message}`)
+        super(`Incorrect argument: ${message}`, 22, 'EINVAL', 'Invalid argument')
         this.name = 'IncorrectDeclaration'
     }
 }

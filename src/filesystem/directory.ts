@@ -1,6 +1,12 @@
+import { NoSuchFileOrDirectory, NotADirectory } from '@/errors/filesystem'
+import { InvalidArgument } from '@/errors/internal'
 import { assertUnique } from '@/utils/assert'
 import { File, type FileDTO } from './file'
 import { FilesystemNode, type FilesystemNodeDTO } from './filesystem-node'
+
+const THIS_DIR = '.' as const
+const PARENT_DIR = '..' as const
+const EXTRA_CHILDREN = [THIS_DIR, PARENT_DIR] as const
 
 export interface DirectoryDTO extends FilesystemNodeDTO {
     readonly type: 'directory';
@@ -13,7 +19,7 @@ export class Directory extends FilesystemNode {
     public constructor(dto: DirectoryDTO, parent?: Directory) {
         super(dto, parent)
         if (dto.permissions === 'execute') {
-            throw new Error('Directories cannot be executable')
+            throw new InvalidArgument('Directories cannot be executable')
         }
         this.children = dto.children.map((child) => {
             switch (child.type) {
@@ -26,18 +32,72 @@ export class Directory extends FilesystemNode {
             }
         })
         assertUnique(this.children, 'internalName', (value) => {
-            throw new Error(`Duplicate child internal name '${value}' in directory '${this.internalName}'`)
+            throw new InvalidArgument(`Duplicate child internal name '${value}' in directory '${this.internalName}'`)
         })
         assertUnique(this.children, 'displayName', (value) => {
-            throw new Error(`Duplicate child display name '${value}' in directory '${this.internalName}'`)
+            throw new InvalidArgument(`Duplicate child display name '${value}' in directory '${this.internalName}'`)
         })
     }
 
     public get childrenInternalNames(): string[] {
-        return this.children.map(child => child.internalName)
+        const names = this.children.map(child => child.internalName)
+        return Directory.sortAndAddExtraChildren(names)
     }
     
     public get childrenDisplayNames(): string[] {
-        return this.children.filter(child => child.visible).map(child => child.displayName)
+        const names = this.children.filter(child => child.visible).map(child => child.displayName)
+        return Directory.sortAndAddExtraChildren(names)
+    }
+
+    private static sortAndAddExtraChildren(names: string[]): string[] {
+        const allChildren = names.concat(EXTRA_CHILDREN)
+        return allChildren.toSorted((a, b) => a.localeCompare(b))
+    }
+
+    public getDisplayChild(displayName: string): FilesystemNode {
+        return this.getChild(displayName, 'displayName')
+    }
+
+    public getInternalChild(internalName: string): FilesystemNode {
+        return this.getChild(internalName, 'internalName')
+    }
+
+    public resolveDisplayPath(path: string[]): FilesystemNode {
+        return this.resolvePath(path, 'displayName')
+    }
+
+    public resolveInternalPath(path: string[]): FilesystemNode {
+        return this.resolvePath(path, 'internalName')
+    }
+
+    private getChild(name: string, nameAttr: keyof(FilesystemNode)): FilesystemNode {
+        switch (name) {
+            case THIS_DIR:
+                return this
+            case PARENT_DIR:
+                return this.parent
+            default: {
+                const child = this.children.find(c => c[nameAttr] === name)
+                if (child) {
+                    return child
+                }
+                throw new NoSuchFileOrDirectory()
+            }
+        }
+    }
+
+    private resolvePath(path: string[], nameAttr: keyof(FilesystemNode)): FilesystemNode {
+        if (path.length === 0) {
+            return this
+        }
+        const [childName, ...rest] = path
+        const child = this.getChild(childName, nameAttr)
+        if (child instanceof Directory) {
+            return child.resolvePath(rest, nameAttr)
+        } 
+        if (rest.length > 0) {
+            throw new NotADirectory()
+        }
+        return child
     }
 }
