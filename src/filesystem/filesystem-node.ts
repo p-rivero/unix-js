@@ -1,5 +1,7 @@
-import { InvalidArgument } from '@/errors/internal'
+import { InternalError, InvalidArgument } from '@/errors/internal'
+import { PATH_SEPARATOR } from '@/filesystem/constants'
 import { Directory } from '@/filesystem/directory'
+import assert from 'assert'
 
 export type FilePermissions = 'hidden' | 'locked' | 'read-only' | 'read-write' | 'execute'
 
@@ -26,7 +28,7 @@ export abstract class FilesystemNode {
         } else if (this instanceof Directory) {
             this.parent = this
         } else {
-            throw new InvalidArgument('The filesystem root must be a directory')
+            throw new InternalError('The filesystem root must be a directory')
         }
     }
 
@@ -46,10 +48,24 @@ export abstract class FilesystemNode {
         return this.permissions === 'execute'
     }
 
+    public get absoluteDisplayPath(): string {
+        return this.getAbsolutePath('displayName')
+    }
+
+    public get absoluteInternalPath(): string {
+        return this.getAbsolutePath('internalName')
+    }
+
+    protected getAbsolutePath(attribute: keyof FilesystemNode): string {
+        const name = this[attribute]
+        assert(typeof name === 'string')
+        return this.parent.getAbsolutePath(attribute) + PATH_SEPARATOR + name
+    }
+
     private assertNameIsValid(): void {
         function check(name: string, nameType: string): void {
-            if (name.includes('/')) {
-                throw new InvalidArgument(`${nameType} '${name}' cannot contain '/'`)
+            if (name.includes(PATH_SEPARATOR)) {
+                throw new InvalidArgument(`${nameType} '${name}' cannot contain '${PATH_SEPARATOR}'`)
             }
             if (name === '') {
                 throw new InvalidArgument(`${nameType} cannot be empty`)

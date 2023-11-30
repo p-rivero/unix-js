@@ -1,12 +1,10 @@
 import { NoSuchFileOrDirectory, NotADirectory } from '@/errors/filesystem'
-import { InvalidArgument } from '@/errors/internal'
+import { InternalError, InvalidArgument } from '@/errors/internal'
+import { PARENT_DIR, THIS_DIR } from '@/filesystem/constants'
 import { assertUnique } from '@/utils/assert'
 import { File, type FileDTO } from './file'
 import { FilesystemNode, type FilesystemNodeDTO } from './filesystem-node'
 
-const THIS_DIR = '.' as const
-const PARENT_DIR = '..' as const
-const EXTRA_CHILDREN = [THIS_DIR, PARENT_DIR] as const
 
 export interface DirectoryDTO extends FilesystemNodeDTO {
     readonly type: 'directory';
@@ -16,7 +14,7 @@ export interface DirectoryDTO extends FilesystemNodeDTO {
 export class Directory extends FilesystemNode {
     public readonly children: FilesystemNode[]
 
-    public constructor(dto: DirectoryDTO, parent?: Directory) {
+    protected constructor(dto: DirectoryDTO, parent?: Directory) {
         super(dto, parent)
         if (dto.permissions === 'execute') {
             throw new InvalidArgument('Directories cannot be executable')
@@ -28,7 +26,7 @@ export class Directory extends FilesystemNode {
                 case 'file':
                     return new File(child, this)
                 default:
-                    throw new Error('Unknown node type')
+                    throw new InternalError('Unknown node type')
             }
         })
         assertUnique(this.children, 'internalName', (value) => {
@@ -50,7 +48,7 @@ export class Directory extends FilesystemNode {
     }
 
     private static sortAndAddExtraChildren(names: string[]): string[] {
-        const allChildren = names.concat(EXTRA_CHILDREN)
+        const allChildren = names.concat([THIS_DIR, PARENT_DIR])
         return allChildren.toSorted((a, b) => a.localeCompare(b))
     }
 

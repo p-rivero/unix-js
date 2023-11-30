@@ -1,6 +1,13 @@
 import { InvalidArgument } from '@/errors/internal'
 import { File, type FileDTO } from '@/filesystem/file'
+import { RootDirectory } from '@/filesystem/root-directory'
 import { expect, test } from 'bun:test'
+
+const parent = new RootDirectory({
+    internalName: 'test',
+    type: 'directory',
+    children: []
+})
 
 test('file must have valid name', () => {
     let dto: FileDTO = {
@@ -8,14 +15,14 @@ test('file must have valid name', () => {
         type: 'file',
         content: ''
     }
-    expect(() => new File(dto)).toThrow(new InvalidArgument("Internal name 'a/b' cannot contain '/'"))
+    expect(() => new File(dto, parent)).toThrow(new InvalidArgument("Internal name 'a/b' cannot contain '/'"))
 
     dto = {
         internalName: '',
         type: 'file',
         content: ''
     }
-    expect(() => new File(dto)).toThrow(new InvalidArgument('Internal name cannot be empty'))
+    expect(() => new File(dto, parent)).toThrow(new InvalidArgument('Internal name cannot be empty'))
 
     dto = {
         internalName: 'name',
@@ -23,28 +30,19 @@ test('file must have valid name', () => {
         type: 'file',
         content: ''
     }
-    expect(() => new File(dto)).toThrow(new InvalidArgument('Display name cannot be empty'))
+    expect(() => new File(dto, parent)).toThrow(new InvalidArgument('Display name cannot be empty'))
 
     dto = {
         internalName: '.',
         type: 'file',
         content: ''
     }
-    expect(() => new File(dto)).toThrow(new InvalidArgument('Internal name cannot be "." or ".."'))
+    expect(() => new File(dto, parent)).toThrow(new InvalidArgument('Internal name cannot be "." or ".."'))
 
     dto = {
         internalName: '..',
         type: 'file',
         content: ''
     }
-    expect(() => new File(dto)).toThrow(new InvalidArgument('Internal name cannot be "." or ".."'))
-})
-
-test('root cannot be a file', () => {
-    const dto: FileDTO = {
-        internalName: 'file.txt',
-        type: 'file',
-        content: ''
-    }
-    expect(() => new File(dto)).toThrow(new InvalidArgument('The filesystem root must be a directory'))
+    expect(() => new File(dto, parent)).toThrow(new InvalidArgument('Internal name cannot be "." or ".."'))
 })
