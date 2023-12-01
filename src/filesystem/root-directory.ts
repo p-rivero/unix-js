@@ -9,11 +9,11 @@ export class RootDirectory extends Directory {
         super(dto)
     }
 
-    public override get absoluteDisplayPath(): string {
+    public override get displayAbsolutePath(): string {
         return PATH_SEPARATOR
     }
 
-    public override get absoluteInternalPath(): string {
+    public override get internalAbsolutePath(): string {
         return PATH_SEPARATOR
     }
 

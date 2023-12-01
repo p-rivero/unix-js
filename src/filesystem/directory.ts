@@ -7,8 +7,8 @@ import { FilesystemNode, type FilesystemNodeDTO } from './filesystem-node'
 
 
 export interface DirectoryDTO extends FilesystemNodeDTO {
-    readonly type: 'directory';
-    readonly children: readonly (DirectoryDTO | FileDTO)[];
+    readonly type: 'directory'
+    readonly children: readonly (DirectoryDTO | FileDTO)[]
 }
 
 export class Directory extends FilesystemNode {
@@ -37,12 +37,12 @@ export class Directory extends FilesystemNode {
         })
     }
 
-    public get childrenInternalNames(): string[] {
+    public get internalChildrenNames(): string[] {
         const names = this.children.map(child => child.internalName)
         return Directory.sortAndAddExtraChildren(names)
     }
     
-    public get childrenDisplayNames(): string[] {
+    public get displayChildrenNames(): string[] {
         const names = this.children.filter(child => child.visible).map(child => child.displayName)
         return Directory.sortAndAddExtraChildren(names)
     }
@@ -52,19 +52,19 @@ export class Directory extends FilesystemNode {
         return allChildren.toSorted((a, b) => a.localeCompare(b))
     }
 
-    public getDisplayChild(displayName: string): FilesystemNode {
+    public displayGetChild(displayName: string): FilesystemNode {
         return this.getChild(displayName, 'displayName')
     }
 
-    public getInternalChild(internalName: string): FilesystemNode {
+    public internalGetChild(internalName: string): FilesystemNode {
         return this.getChild(internalName, 'internalName')
     }
 
-    public resolveDisplayPath(path: string[]): FilesystemNode {
+    public displayResolvePath(path: string[]): FilesystemNode {
         return this.resolvePath(path, 'displayName')
     }
 
-    public resolveInternalPath(path: string[]): FilesystemNode {
+    public internalResolvePath(path: string[]): FilesystemNode {
         return this.resolvePath(path, 'internalName')
     }
 

@@ -24,8 +24,8 @@ test('directory can list files', () => {
     }
 
     const dir = new RootDirectory(dto)
-    expect(dir.childrenInternalNames).toEqual(['.', '..', 'test1.txt', 'test2.txt'])
-    expect(dir.childrenDisplayNames).toEqual(['.', '..', 'test.txt'])
+    expect(dir.internalChildrenNames).toEqual(['.', '..', 'test1.txt', 'test2.txt'])
+    expect(dir.displayChildrenNames).toEqual(['.', '..', 'test.txt'])
 })
 
 test('names of directory children must be unique', () => {
@@ -102,21 +102,21 @@ test('can resolve internal path', () => {
         ]
     }
     const dir = new RootDirectory(dto)
-    expect(dir.resolveInternalPath(['.']).internalName).toEqual('root-dir')
-    expect(dir.resolveInternalPath(['.']).absoluteInternalPath).toEqual('/')
+    expect(dir.internalResolvePath(['.']).internalName).toEqual('root-dir')
+    expect(dir.internalResolvePath(['.']).internalAbsolutePath).toEqual('/')
 
-    expect(dir.resolveInternalPath(['..']).internalName).toEqual('root-dir')
-    expect(dir.resolveInternalPath(['..']).absoluteInternalPath).toEqual('/')
+    expect(dir.internalResolvePath(['..']).internalName).toEqual('root-dir')
+    expect(dir.internalResolvePath(['..']).internalAbsolutePath).toEqual('/')
 
-    expect(dir.resolveInternalPath(['subdir']).internalName).toEqual('subdir')
-    expect(dir.resolveInternalPath(['subdir']).absoluteInternalPath).toEqual('/subdir')
+    expect(dir.internalResolvePath(['subdir']).internalName).toEqual('subdir')
+    expect(dir.internalResolvePath(['subdir']).internalAbsolutePath).toEqual('/subdir')
     
-    expect(dir.resolveInternalPath(['subdir', '..']).internalName).toEqual('root-dir')
-    expect(dir.resolveInternalPath(['subdir', '..']).absoluteInternalPath).toEqual('/')
+    expect(dir.internalResolvePath(['subdir', '..']).internalName).toEqual('root-dir')
+    expect(dir.internalResolvePath(['subdir', '..']).internalAbsolutePath).toEqual('/')
 
-    expect(dir.resolveInternalPath(['subdir', 'file2.txt']).internalName).toEqual('file2.txt')
-    expect(dir.resolveInternalPath(['subdir', 'file2.txt']).absoluteInternalPath).toEqual('/subdir/file2.txt')
+    expect(dir.internalResolvePath(['subdir', 'file2.txt']).internalName).toEqual('file2.txt')
+    expect(dir.internalResolvePath(['subdir', 'file2.txt']).internalAbsolutePath).toEqual('/subdir/file2.txt')
 
-    expect(dir.resolveInternalPath(['subdir', '.', '..', 'subdir', 'file2.txt']).internalName).toEqual('file2.txt')
-    expect(dir.resolveInternalPath(['subdir', '.', '..', 'subdir', 'file2.txt']).absoluteInternalPath).toEqual('/subdir/file2.txt')
+    expect(dir.internalResolvePath(['subdir', '.', '..', 'subdir', 'file2.txt']).internalName).toEqual('file2.txt')
+    expect(dir.internalResolvePath(['subdir', '.', '..', 'subdir', 'file2.txt']).internalAbsolutePath).toEqual('/subdir/file2.txt')
 })

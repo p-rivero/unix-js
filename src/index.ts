@@ -1,6 +1,6 @@
-import { Directory } from './filesystem/directory'
+import { RootDirectory } from '@/filesystem/root-directory'
 
-const dir: Directory = new Directory({
+const dir = new RootDirectory({
     type: 'directory',
     internalName: 'home',
     children: [
@@ -12,4 +12,4 @@ const dir: Directory = new Directory({
     ]
 })
 
-console.log(dir.childrenInternalNames)
+console.log(dir.internalChildrenNames)

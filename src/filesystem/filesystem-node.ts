@@ -6,10 +6,10 @@ import assert from 'assert'
 export type FilePermissions = 'hidden' | 'locked' | 'read-only' | 'read-write' | 'execute'
 
 export interface FilesystemNodeDTO {
-    readonly internalName: string;
-    readonly displayName?: string;
-    readonly permissions?: FilePermissions;
-    readonly type: 'directory' | 'file';
+    readonly internalName: string
+    readonly displayName?: string
+    readonly permissions?: FilePermissions
+    readonly type: 'directory' | 'file'
 }
 
 export abstract class FilesystemNode {
@@ -48,11 +48,11 @@ export abstract class FilesystemNode {
         return this.permissions === 'execute'
     }
 
-    public get absoluteDisplayPath(): string {
+    public get displayAbsolutePath(): string {
         return this.getAbsolutePath('displayName')
     }
 
-    public get absoluteInternalPath(): string {
+    public get internalAbsolutePath(): string {
         return this.getAbsolutePath('internalName')
     }
 

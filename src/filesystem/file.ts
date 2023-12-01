@@ -2,8 +2,8 @@ import type { Directory } from '@/filesystem/directory'
 import { FilesystemNode, type FilesystemNodeDTO } from '@/filesystem/filesystem-node'
 
 export interface FileDTO extends FilesystemNodeDTO {
-    readonly type: 'file';
-    readonly content: string;
+    readonly type: 'file'
+    readonly content: string
 }
 
 export class File extends FilesystemNode {
