@@ -1,10 +1,10 @@
 import { PermissionDenied } from '@/errors'
 import { BINARY_FILE_REPRESENTATION } from '@/filesystem/constants'
 import type { Directory } from '@/filesystem/directories/directory'
+import type { ExecutionContext } from '@/filesystem/execution-context'
 import { File, type FileDTO } from '@/filesystem/files/file'
-import type { IOStreams } from '@/input-output/io-stream'
 
-export type Executable = (streams: IOStreams) => number | undefined
+export type Executable = (context: ExecutionContext) => number | undefined
 
 export interface BinaryFileDTO extends FileDTO {
     readonly type: 'binary-file'
@@ -36,7 +36,7 @@ export class BinaryFile extends File {
         this.content = executable
     }
 
-    public override implementExecute(streams: IOStreams): number {
-        return this.content(streams) ?? 0
+    public override implementExecute(context: ExecutionContext): number {
+        return this.content(context) ?? 0
     }
 }

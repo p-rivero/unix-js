@@ -2,9 +2,10 @@ import { InvalidArgument, PermissionDenied } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
 import type { DirectoryDTO } from '@/filesystem/directories/directory'
 import { RootDirectory } from '@/filesystem/directories/root-directory'
+import type { ExecutionContext } from '@/filesystem/execution-context'
 import { BinaryFile } from '@/filesystem/files/binary-file'
+import type { File } from '@/filesystem/files/file'
 import { TextFile, type TextFileDTO } from '@/filesystem/files/text-file'
-import type { IOStream, IOStreams } from '@/input-output/io-stream'
 import assert from 'assert'
 import { expect, mock, test } from 'bun:test'
 
@@ -14,18 +15,18 @@ const parent = new RootDirectory({
     children: []
 })
 
-function mockStreams(): IOStreams {
-    function mockStream(): IOStream {
+function mockContext(): ExecutionContext {
+    function mockStream(): File {
         return {
             read: mock(() => ''),
             write: mock(() => '')
-        }
+        } as unknown as File
     }
     return {
         stdin: mockStream(),
         stdout: mockStream(),
         stderr: mockStream()
-    }
+    } as unknown as ExecutionContext
 }
 
 test('file must have valid name', () => {
@@ -180,8 +181,8 @@ test('binary files can be executable', () => {
     expect(file.read()).toEqual('\n** Binary file **\n')
     expect(() => file.write('foo')).toThrow(new PermissionDenied())
 
-    const streams = mockStreams()
-    expect(file.execute(streams)).toEqual(123)
+    const context = mockContext()
+    expect(file.execute(context)).toEqual(123)
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(streams.stdout.write).toHaveBeenCalledTimes(1)
+    expect(context.stdout.write).toHaveBeenCalledTimes(1)
 })

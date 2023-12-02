@@ -1,10 +1,9 @@
 import { PermissionDenied } from '@/errors'
 import type { Directory } from '@/filesystem/directories/directory'
+import type { ExecutionContext } from '@/filesystem/execution-context'
 import { FilesystemNode, type FilesystemNodeDTO } from '@/filesystem/filesystem-node'
-import type { IOStream, IOStreams } from '@/input-output/io-stream'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
-export type Executable = (inputStream: IOStream, outputStream: IOStream) => number | undefined
 
 export interface FileDTO extends FilesystemNodeDTO {
     readonly permissions?: FilePermission
@@ -41,16 +40,16 @@ export abstract class File extends FilesystemNode {
         this.implementWrite(content)
     }
 
-    public execute(streams: IOStreams): number {
+    public execute(context: ExecutionContext): number {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementExecute(streams)
+        return this.implementExecute(context)
     }
 
     protected abstract implementRead(): string
 
     protected abstract implementWrite(content: string): void
 
-    protected abstract implementExecute(streams: IOStreams): number
+    protected abstract implementExecute(context: ExecutionContext): number
 }

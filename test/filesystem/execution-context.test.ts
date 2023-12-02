@@ -1,4 +1,4 @@
-import { InvalidArgument } from '@/errors'
+import { InvalidArgument, PermissionDenied } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
 import type { DirectoryDTO } from '@/filesystem/directories/directory'
 import { ExecutionContext, type ExecutionContextDTO } from '@/filesystem/execution-context'
@@ -117,4 +117,25 @@ test('can change directory', () => {
 
     context.displayChangeDirectory('~')
     expect(context.internalResolvePath('.').internalAbsolutePath).toEqual('/home/user')
+})
+
+test('can create pipes', () => {
+    const dto: ExecutionContextDTO = {
+        filesystemTree: FILESYSTEM_TREE,
+        homePath: '/'
+    }
+    const context = new ExecutionContext(dto)
+    const [pipeIn, pipeOut] = context.createPipe()
+    expect(context.rootDirectory.internalChildrenNames).toEqual(['.', '..', 'home'])
+
+    pipeIn.write('foo')
+    expect(pipeOut.read()).toEqual('foo')
+
+    pipeIn.write('bar')
+    pipeIn.write('baz')
+    expect(pipeOut.read()).toEqual('barbaz')
+    expect(pipeOut.read()).toEqual('')
+
+    expect(() => pipeOut.write('foo')).toThrow(new PermissionDenied())
+    expect(() => pipeIn.read()).toThrow(new PermissionDenied())
 })

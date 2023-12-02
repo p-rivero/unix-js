@@ -1,6 +1,6 @@
 import type { Directory } from '@/filesystem/directories/directory'
+import type { ExecutionContext } from '@/filesystem/execution-context'
 import { File, type FileDTO } from '@/filesystem/files/file'
-import type { IOStreams } from '@/input-output/io-stream'
 
 export interface TextFileDTO extends FileDTO {
     readonly type: 'text-file'
@@ -23,8 +23,8 @@ export class TextFile extends File {
         this.content += content
     }
 
-    public override implementExecute(streams: IOStreams): number {
-        streams.stdout.write(this.content)
+    public override implementExecute(context: ExecutionContext): number {
+        context.stdout.write(this.content)
         return 0
     }
 }
