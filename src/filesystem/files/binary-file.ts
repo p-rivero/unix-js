@@ -4,7 +4,7 @@ import type { Directory } from '@/filesystem/directories/directory'
 import type { ExecutionContext } from '@/filesystem/execution-context'
 import { File, type FileDTO } from '@/filesystem/files/file'
 
-export type Executable = (context: ExecutionContext) => number | undefined
+export type Executable = (context: ExecutionContext, args: string[]) => number | undefined
 
 export interface BinaryFileDTO extends FileDTO {
     readonly type: 'binary-file'
@@ -36,7 +36,7 @@ export class BinaryFile extends File {
         this.content = executable
     }
 
-    public override implementExecute(context: ExecutionContext): number {
-        return this.content(context) ?? 0
+    public override implementExecute(context: ExecutionContext, args: string[]): number {
+        return this.content(context, args) ?? 0
     }
 }

@@ -1,11 +1,11 @@
 import { InternalError, InvalidArgument } from '@/errors'
-import { NoSuchFileOrDirectory } from '@/errors/filesystem'
 import { Directory, type DirectoryDTO } from '@/filesystem/directories/directory'
 import { RootDirectory } from '@/filesystem/directories/root-directory'
 import { DeviceFile } from '@/filesystem/files/device-file'
 import type { File } from '@/filesystem/files/file'
 import type { FilesystemNode } from '@/filesystem/filesystem-node'
 import { FilesystemPath } from '@/filesystem/filesystem-path'
+import assert from 'assert'
 
 export interface ExecutionContextDTO {
     readonly filesystemTree: DirectoryDTO
@@ -16,9 +16,9 @@ export class ExecutionContext {
     public readonly rootDirectory: RootDirectory
     public readonly homeDirectory: Directory
     private currentDirectory: Directory
-    private readonly stdinFile?: File
-    private readonly stdoutFile?: File
-    private readonly stderrFile?: File
+    private stdinFile?: File
+    private stdoutFile?: File
+    private stderrFile?: File
     
     public constructor(dto: ExecutionContextDTO | ExecutionContext) {
         if (dto instanceof ExecutionContext) {
@@ -45,6 +45,9 @@ export class ExecutionContext {
         }
         return this.stdinFile
     }
+    public set stdin(file: File) {
+        this.stdinFile = file
+    }
 
     public get stdout(): File {
         if (!this.stdoutFile) {
@@ -52,12 +55,18 @@ export class ExecutionContext {
         }
         return this.stdoutFile
     }
+    public set stdout(file: File) {
+        this.stdoutFile = file
+    }
 
     public get stderr(): File {
         if (!this.stderrFile) {
             throw new InternalError('Shell did not initialize stderr file')
         }
         return this.stderrFile
+    }
+    public set stderr(file: File) {
+        this.stderrFile = file
     }
     
     private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
@@ -67,15 +76,10 @@ export class ExecutionContext {
         }
         try {
             const home = root.internalResolvePath(path.parts)
-            if (!(home instanceof Directory)) {
-                throw new InvalidArgument('The home path must point to a directory')
-            }
+            assert(home instanceof Directory)
             return home
         } catch (error) {
-            if (error instanceof NoSuchFileOrDirectory) {
-                throw new InvalidArgument(`The home '${homePath}' does not exist`)
-            }
-            throw error
+            throw new InvalidArgument(`The home path '${homePath}' must point to an existing directory`)
         }
     }
 

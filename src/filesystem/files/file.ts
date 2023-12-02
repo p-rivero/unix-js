@@ -40,16 +40,16 @@ export abstract class File extends FilesystemNode {
         this.implementWrite(content)
     }
 
-    public execute(context: ExecutionContext): number {
+    public execute(context: ExecutionContext, args: string[]): number {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementExecute(context)
+        return this.implementExecute(context, [this.displayAbsolutePath, ...args])
     }
 
     protected abstract implementRead(): string
 
     protected abstract implementWrite(content: string): void
 
-    protected abstract implementExecute(context: ExecutionContext): number
+    protected abstract implementExecute(context: ExecutionContext, args: string[]): number
 }

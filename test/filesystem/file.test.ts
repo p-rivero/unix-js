@@ -166,11 +166,13 @@ test('binary files can be executable', () => {
         type: 'directory',
         children: [
             {
-                internalName: 'bin-file',
+                internalName: 'bin-file-internal',
+                displayName: 'bin-file',
                 type: 'binary-file',
                 permissions: 'execute',
-                executable: streams => {
-                    streams.stdout.write('Hello, world!')
+                executable: (streams, args) => {
+                    expect(args).toEqual(['/bin-file', 'world'])
+                    streams.stdout.write('Hello World')
                     return 123
                 }
             }
@@ -182,7 +184,7 @@ test('binary files can be executable', () => {
     expect(() => file.write('foo')).toThrow(new PermissionDenied())
 
     const context = mockContext()
-    expect(file.execute(context)).toEqual(123)
+    expect(file.execute(context, ['world'])).toEqual(123)
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(context.stdout.write).toHaveBeenCalledTimes(1)
 })

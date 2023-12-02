@@ -45,13 +45,15 @@ test('Home must be a valid directory', () => {
         filesystemTree: FILESYSTEM_TREE,
         homePath: '/home/user2'
     }
-    expect(() => new ExecutionContext(dto)).toThrow(new InvalidArgument("The home '/home/user2' does not exist"))
+    expect(() => new ExecutionContext(dto))
+        .toThrow(new InvalidArgument("The home path '/home/user2' must point to an existing directory"))
     
     dto = {
         filesystemTree: FILESYSTEM_TREE,
         homePath: '/home/user/test1.txt'
     }
-    expect(() => new ExecutionContext(dto)).toThrow(new InvalidArgument('The home path must point to a directory'))
+    expect(() => new ExecutionContext(dto))
+        .toThrow(new InvalidArgument("The home path '/home/user/test1.txt' must point to an existing directory"))
 
     dto = {
         filesystemTree: FILESYSTEM_TREE,

@@ -31,7 +31,7 @@ export class DeviceFile extends File {
         this.onWrite(content)
     }
 
-    public override implementExecute(_context: ExecutionContext): number {
+    public override implementExecute(_context: ExecutionContext, _args: string[]): number {
         throw new PermissionDenied()
     }
 }

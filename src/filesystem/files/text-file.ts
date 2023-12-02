@@ -23,7 +23,7 @@ export class TextFile extends File {
         this.content += content
     }
 
-    public override implementExecute(context: ExecutionContext): number {
+    public override implementExecute(context: ExecutionContext, _args: string[]): number {
         context.stdout.write(this.content)
         return 0
     }
