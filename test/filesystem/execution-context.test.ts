@@ -1,6 +1,6 @@
 import { InvalidArgument } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import type { DirectoryDTO } from '@/filesystem/directory'
+import type { DirectoryDTO } from '@/filesystem/directories/directory'
 import { ExecutionContext, type ExecutionContextDTO } from '@/filesystem/execution-context'
 import { expect, test } from 'bun:test'
 

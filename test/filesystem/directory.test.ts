@@ -1,7 +1,7 @@
 import { InvalidArgument, PermissionDenied } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import { Directory, type DirectoryDTO } from '@/filesystem/directory'
-import { RootDirectory } from '@/filesystem/root-directory'
+import { Directory, type DirectoryDTO } from '@/filesystem/directories/directory'
+import { RootDirectory } from '@/filesystem/directories/root-directory'
 import assert from 'assert'
 import { expect, test } from 'bun:test'
 

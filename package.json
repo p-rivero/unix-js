@@ -75,6 +75,7 @@
         "singleline": { "delimiter": "semi" }
       }],
       "@typescript-eslint/prefer-readonly-parameter-types": ["off"],
+      "@typescript-eslint/explicit-function-return-type": ["warn", { "allowExpressions": true }],
       "@typescript-eslint/no-confusing-void-expression": ["off"]
     }
   }

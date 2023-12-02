@@ -1,6 +1,6 @@
 import { InternalError, InvalidArgument } from '@/errors'
 import { PATH_SEPARATOR } from '@/filesystem/constants'
-import { Directory } from '@/filesystem/directory'
+import { Directory } from '@/filesystem/directories/directory'
 import assert from 'assert'
 
 export type AccessType = 'hidden' | 'locked' | 'readable'
@@ -9,7 +9,6 @@ export interface FilesystemNodeDTO {
     readonly internalName: string
     readonly displayName?: string
     readonly accessType?: AccessType
-    readonly type: 'directory' | 'text-file' | 'binary-file'
 }
 
 export abstract class FilesystemNode {

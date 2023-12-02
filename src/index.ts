@@ -1,15 +1,16 @@
-import { RootDirectory } from '@/filesystem/root-directory'
+import { RootDirectory } from '@/filesystem/directories/root-directory'
 
 const dir = new RootDirectory({
     type: 'directory',
     internalName: 'home',
     children: [
         {
-            type: 'file',
+            type: 'text-file',
             internalName: 'README.md',
             content: 'Hello world!'
         }
     ]
 })
 
-console.log(dir.internalChildrenNames)
+
+console.log(prompt(''))

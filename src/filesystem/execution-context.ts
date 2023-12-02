@@ -1,9 +1,9 @@
 import { InvalidArgument } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import { Directory, type DirectoryDTO } from '@/filesystem/directory'
+import { Directory, type DirectoryDTO } from '@/filesystem/directories/directory'
+import { RootDirectory } from '@/filesystem/directories/root-directory'
 import type { FilesystemNode } from '@/filesystem/filesystem-node'
 import { FilesystemPath } from '@/filesystem/filesystem-path'
-import { RootDirectory } from '@/filesystem/root-directory'
 
 export interface ExecutionContextDTO {
     readonly filesystemTree: DirectoryDTO

@@ -1,15 +1,17 @@
 import { InternalError, InvalidArgument, PermissionDenied } from '@/errors'
 import { NoSuchFileOrDirectory, NotADirectory } from '@/errors/filesystem'
-import { BinaryFile, type BinaryFileDTO } from '@/filesystem/binary-file'
 import { PARENT_DIR, THIS_DIR } from '@/filesystem/constants'
+import { BinaryFile, type BinaryFileDTO } from '@/filesystem/files/binary-file'
+import { DeviceFile, type DeviceFileDTO } from '@/filesystem/files/device-file'
+import { TextFile, type TextFileDTO } from '@/filesystem/files/text-file'
+import { FilesystemNode, type FilesystemNodeDTO } from '@/filesystem/filesystem-node'
 import { assertUnique } from '@/utils/assert'
-import { FilesystemNode, type FilesystemNodeDTO } from './filesystem-node'
-import { TextFile, type TextFileDTO } from './text-file'
 
+type FilesystemNodeChildDTO = DirectoryDTO | TextFileDTO | BinaryFileDTO | DeviceFileDTO
 
 export interface DirectoryDTO extends FilesystemNodeDTO {
     readonly type: 'directory'
-    readonly children: readonly (DirectoryDTO | TextFileDTO | BinaryFileDTO)[]
+    readonly children: readonly FilesystemNodeChildDTO[]
 }
 
 export class Directory extends FilesystemNode {
@@ -25,6 +27,8 @@ export class Directory extends FilesystemNode {
                     return new TextFile(child, this)
                 case 'binary-file':
                     return new BinaryFile(child, this)
+                case 'device-file':
+                    return new DeviceFile(child, this)
                 default:
                     throw new InternalError('Unknown node type')
             }
