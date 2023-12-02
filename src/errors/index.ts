@@ -24,3 +24,10 @@ export class InvalidArgument extends FakeTermError {
         this.name = 'IncorrectDeclaration'
     }
 }
+
+export class PermissionDenied extends FakeTermError {
+    public constructor() {
+        super('Used lacks permission to perform this action', 13, 'EACCES', 'Permission denied')
+        this.name = 'PermissionDenied'
+    }
+}

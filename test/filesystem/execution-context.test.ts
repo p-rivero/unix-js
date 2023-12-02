@@ -1,5 +1,5 @@
+import { InvalidArgument } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import { InvalidArgument } from '@/errors/internal'
 import type { DirectoryDTO } from '@/filesystem/directory'
 import { ExecutionContext, type ExecutionContextDTO } from '@/filesystem/execution-context'
 import { expect, test } from 'bun:test'
@@ -20,8 +20,8 @@ const FILESYSTEM_TREE: DirectoryDTO = {
                         {
                             internalName: 'test1.txt',
                             displayName: 'test.txt',
-                            permissions: 'hidden',
-                            type: 'file',
+                            accessType: 'locked',
+                            type: 'text-file',
                             content: ''
                         }
                     ]
@@ -75,7 +75,7 @@ test('can resolve simple paths', () => {
     const context = new ExecutionContext(dto)
     expect(context.internalResolvePath('test1.txt').displayAbsolutePath).toEqual('/displayHome/user/test.txt')
     expect(context.displayResolvePath('test.txt').internalAbsolutePath).toEqual('/home/user/test1.txt')
-    expect(context.internalResolvePath('./test1.txt').visible).toEqual(false)
+    expect(context.internalResolvePath('./test1.txt').readable).toEqual(false)
     expect(() => context.displayResolvePath('test1.txt')).toThrow(new NoSuchFileOrDirectory())
     expect(() => context.internalResolvePath('test.txt')).toThrow(new NoSuchFileOrDirectory())
 })

@@ -1,14 +1,15 @@
+import { InternalError, InvalidArgument, PermissionDenied } from '@/errors'
 import { NoSuchFileOrDirectory, NotADirectory } from '@/errors/filesystem'
-import { InternalError, InvalidArgument } from '@/errors/internal'
+import { BinaryFile, type BinaryFileDTO } from '@/filesystem/binary-file'
 import { PARENT_DIR, THIS_DIR } from '@/filesystem/constants'
 import { assertUnique } from '@/utils/assert'
-import { File, type FileDTO } from './file'
 import { FilesystemNode, type FilesystemNodeDTO } from './filesystem-node'
+import { TextFile, type TextFileDTO } from './text-file'
 
 
 export interface DirectoryDTO extends FilesystemNodeDTO {
     readonly type: 'directory'
-    readonly children: readonly (DirectoryDTO | FileDTO)[]
+    readonly children: readonly (DirectoryDTO | TextFileDTO | BinaryFileDTO)[]
 }
 
 export class Directory extends FilesystemNode {
@@ -16,15 +17,14 @@ export class Directory extends FilesystemNode {
 
     protected constructor(dto: DirectoryDTO, parent?: Directory) {
         super(dto, parent)
-        if (dto.permissions === 'execute') {
-            throw new InvalidArgument('Directories cannot be executable')
-        }
         this.children = dto.children.map((child) => {
             switch (child.type) {
                 case 'directory':
                     return new Directory(child, this)
-                case 'file':
-                    return new File(child, this)
+                case 'text-file':
+                    return new TextFile(child, this)
+                case 'binary-file':
+                    return new BinaryFile(child, this)
                 default:
                     throw new InternalError('Unknown node type')
             }
@@ -43,6 +43,9 @@ export class Directory extends FilesystemNode {
     }
     
     public get displayChildrenNames(): string[] {
+        if (!this.readable) {
+            throw new PermissionDenied()
+        }
         const names = this.children.filter(child => child.visible).map(child => child.displayName)
         return Directory.sortAndAddExtraChildren(names)
     }
@@ -69,6 +72,9 @@ export class Directory extends FilesystemNode {
     }
 
     private getChild(name: string, nameAttr: keyof(FilesystemNode)): FilesystemNode {
+        if (nameAttr === 'displayName' && !this.readable) {
+            throw new PermissionDenied()
+        }
         switch (name) {
             case THIS_DIR:
                 return this
@@ -76,7 +82,9 @@ export class Directory extends FilesystemNode {
                 return this.parent
             default: {
                 const child = this.children.find(c => c[nameAttr] === name)
-                if (child) {
+                const childIsHidden = child?.accessType === 'hidden'
+                const shouldHideChild = childIsHidden && nameAttr === 'displayName'
+                if (child && !shouldHideChild) {
                     return child
                 }
                 throw new NoSuchFileOrDirectory()

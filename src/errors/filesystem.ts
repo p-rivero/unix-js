@@ -1,4 +1,4 @@
-import { FakeTermError } from '@/errors/internal'
+import { FakeTermError } from '@/errors'
 
 export abstract class FilesystemError extends FakeTermError { }
 

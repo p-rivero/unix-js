@@ -1,5 +1,5 @@
+import { InvalidArgument } from '@/errors'
 import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import { InvalidArgument } from '@/errors/internal'
 import { Directory, type DirectoryDTO } from '@/filesystem/directory'
 import type { FilesystemNode } from '@/filesystem/filesystem-node'
 import { FilesystemPath } from '@/filesystem/filesystem-path'

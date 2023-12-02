@@ -1,6 +1,8 @@
-import { InvalidArgument } from '@/errors/internal'
-import type { DirectoryDTO } from '@/filesystem/directory'
+import { InvalidArgument, PermissionDenied } from '@/errors'
+import { NoSuchFileOrDirectory } from '@/errors/filesystem'
+import { Directory, type DirectoryDTO } from '@/filesystem/directory'
 import { RootDirectory } from '@/filesystem/root-directory'
+import assert from 'assert'
 import { expect, test } from 'bun:test'
 
 test('directory can list files', () => {
@@ -11,13 +13,13 @@ test('directory can list files', () => {
             {
                 internalName: 'test1.txt',
                 displayName: 'test.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             },
             {
                 internalName: 'test2.txt',
-                permissions: 'hidden',
-                type: 'file',
+                accessType: 'hidden',
+                type: 'text-file',
                 content: ''
             }
         ]
@@ -35,12 +37,12 @@ test('names of directory children must be unique', () => {
         children: [
             {
                 internalName: 'test1.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             },
             {
                 internalName: 'test1.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             }
         ]
@@ -54,28 +56,18 @@ test('names of directory children must be unique', () => {
             {
                 internalName: 'test1.txt',
                 displayName: 'test.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             },
             {
                 internalName: 'test2.txt',
                 displayName: 'test.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             }
         ]
     }
     expect(() => new RootDirectory(dto)).toThrow('Duplicate child display name \'test.txt\' in directory \'test\'')
-})
-
-test('directories cannot be executable', () => {
-    const dto: DirectoryDTO = {
-        internalName: 'test',
-        type: 'directory',
-        permissions: 'execute',
-        children: []
-    }
-    expect(() => new RootDirectory(dto)).toThrow(new InvalidArgument('Directories cannot be executable'))
 })
 
 test('can resolve internal path', () => {
@@ -85,7 +77,7 @@ test('can resolve internal path', () => {
         children: [
             {
                 internalName: 'file1.txt',
-                type: 'file',
+                type: 'text-file',
                 content: ''
             },
             {
@@ -94,7 +86,7 @@ test('can resolve internal path', () => {
                 children: [
                     {
                         internalName: 'file2.txt',
-                        type: 'file',
+                        type: 'text-file',
                         content: ''
                     }
                 ]
@@ -119,4 +111,75 @@ test('can resolve internal path', () => {
 
     expect(dir.internalResolvePath(['subdir', '.', '..', 'subdir', 'file2.txt']).internalName).toEqual('file2.txt')
     expect(dir.internalResolvePath(['subdir', '.', '..', 'subdir', 'file2.txt']).internalAbsolutePath).toEqual('/subdir/file2.txt')
+})
+
+test('user cannot access locked directory', () => {
+    const dto: DirectoryDTO = {
+        internalName: 'root-dir',
+        type: 'directory',
+        children: [
+            {
+                internalName: 'locked-dir',
+                type: 'directory',
+                accessType: 'locked',
+                children: [
+                    {
+                        internalName: 'secret-file.txt',
+                        type: 'text-file',
+                        content: ''
+                    }
+                ]
+            },
+            {
+                internalName: 'empty-locked-dir',
+                type: 'directory',
+                accessType: 'locked',
+                children: []
+            }
+        ]
+    }
+    const dir = new RootDirectory(dto)
+    expect(dir.displayChildrenNames).toEqual(['.', '..', 'empty-locked-dir', 'locked-dir'])
+    const lockedDir = dir.displayGetChild('locked-dir')
+    assert(lockedDir instanceof Directory)
+
+    expect(lockedDir.displayAbsolutePath).toEqual('/locked-dir')
+    expect(() => lockedDir.displayChildrenNames).toThrow(new PermissionDenied())
+    expect(lockedDir.internalChildrenNames).toEqual(['.', '..', 'secret-file.txt'])
+
+    expect(() => lockedDir.displayResolvePath(['foo'])).toThrow(new PermissionDenied())
+    expect(() => lockedDir.displayGetChild('foo')).toThrow(new PermissionDenied())
+    expect(() => dir.displayResolvePath(['locked-dir', 'foo'])).toThrow(new PermissionDenied())
+    expect(() => dir.displayResolvePath(['locked-dir', 'secret-file.txt'])).toThrow(new PermissionDenied())
+    expect(() => dir.internalResolvePath(['locked-dir', 'secret-file.txt'])).not.toThrow()
+
+    expect(() => dir.displayResolvePath(['empty-locked-dir'])).not.toThrow()
+    expect(() => dir.displayResolvePath(['empty-locked-dir', '.'])).toThrow(new PermissionDenied())
+})
+
+test('user cannot access hidden directories', () => {
+    const dto: DirectoryDTO = {
+        internalName: 'root-dir',
+        type: 'directory',
+        children: [
+            {
+                internalName: 'hidden-dir',
+                type: 'directory',
+                accessType: 'hidden',
+                children: [
+                    {
+                        internalName: 'secret-file.txt',
+                        type: 'text-file',
+                        content: ''
+                    }
+                ]
+            }
+        ]
+    }
+    const dir = new RootDirectory(dto)
+    expect(dir.displayChildrenNames).toEqual(['.', '..'])
+    expect(() => dir.displayGetChild('hidden-dir')).toThrow(new NoSuchFileOrDirectory())
+    expect(() => dir.internalGetChild('hidden-dir')).not.toThrow()
+    expect(() => dir.displayResolvePath(['hidden-dir', 'secret-file.txt'])).toThrow(new NoSuchFileOrDirectory())
+    expect(() => dir.internalResolvePath(['hidden-dir', 'secret-file.txt'])).not.toThrow()
 })

@@ -1,27 +1,27 @@
-import { InternalError, InvalidArgument } from '@/errors/internal'
+import { InternalError, InvalidArgument } from '@/errors'
 import { PATH_SEPARATOR } from '@/filesystem/constants'
 import { Directory } from '@/filesystem/directory'
 import assert from 'assert'
 
-export type FilePermissions = 'hidden' | 'locked' | 'read-only' | 'read-write' | 'execute'
+export type AccessType = 'hidden' | 'locked' | 'readable'
 
 export interface FilesystemNodeDTO {
     readonly internalName: string
     readonly displayName?: string
-    readonly permissions?: FilePermissions
-    readonly type: 'directory' | 'file'
+    readonly accessType?: AccessType
+    readonly type: 'directory' | 'text-file' | 'binary-file'
 }
 
 export abstract class FilesystemNode {
     public readonly internalName: string
     public readonly displayName: string
-    public readonly permissions: FilePermissions
+    public readonly accessType: AccessType
     public readonly parent: Directory
 
     protected constructor(dto: FilesystemNodeDTO, parent?: Directory) {
         this.internalName = dto.internalName
         this.displayName = dto.displayName ?? dto.internalName
-        this.permissions = dto.permissions ?? 'read-write'
+        this.accessType = dto.accessType ?? 'readable'
         this.assertNameIsValid()
         if (parent) {
             this.parent = parent
@@ -33,19 +33,11 @@ export abstract class FilesystemNode {
     }
 
     public get visible(): boolean {
-        return this.permissions !== 'hidden'
+        return this.accessType !== 'hidden'
     }
 
     public get readable(): boolean {
-        return this.permissions === 'read-only' || this.permissions === 'read-write'
-    }
-
-    public get writable(): boolean {
-        return this.permissions === 'read-write'
-    }
-
-    public get executable(): boolean {
-        return this.permissions === 'execute'
+        return this.accessType === 'readable'
     }
 
     public get displayAbsolutePath(): string {
