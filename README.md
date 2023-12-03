@@ -64,13 +64,16 @@ Available commands:
 bun run .
 bun lint
 bun test
-bun run bundle
+bun bundle
 ```
 
 
 ## Similar projects
 
 Here are some other fake terminals that I've found, and how they compare to unix.js:
+
+<details>
+<summary>Click to expand</summary>
 
 - unix.js
   - The goal is to be a realistic UNIX experience, but full POSIX support is **not** a goal.
@@ -115,3 +118,5 @@ Here are some other fake terminals that I've found, and how they compare to unix
   - Not typed (plain JavaScript)
 
 If you know of any other similar projects, please let me know by opening an issue or a pull request!
+
+</details>

@@ -13,4 +13,4 @@ const dir = new RootDirectory({
 })
 
 
-console.log(prompt(''))
+console.log(dir)
