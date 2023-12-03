@@ -22,6 +22,7 @@
     "@typescript-eslint/parser": "^6.11.0",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
+    "dts-bundle-generator": "^9.0.0",
     "eslint": "^8.54.0",
     "eslint-plugin-only-warn": "^1.1.0"
   },
@@ -32,7 +33,7 @@
     "lint": "eslint src",
     "bundle": "bun run bundle:build && bun run bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
-    "bundle:types": "tsc --project tsconfig.types.json"
+    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent"
   },
   "eslintConfig": {
     "root": true,
