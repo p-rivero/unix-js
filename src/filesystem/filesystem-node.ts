@@ -1,7 +1,7 @@
-import { InternalError, InvalidArgument } from '@/errors'
-import { PATH_SEPARATOR } from '@/filesystem/constants'
-import { Directory } from '@/filesystem/directories/directory'
 import assert from 'assert'
+import { InternalError, InvalidArgument } from 'errors'
+import { PATH_SEPARATOR } from 'filesystem/constants'
+import { Directory } from 'filesystem/directories/directory'
 
 export type AccessType = 'hidden' | 'locked' | 'readable'
 

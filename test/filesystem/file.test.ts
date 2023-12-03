@@ -1,13 +1,13 @@
-import { InvalidArgument, PermissionDenied } from '@/errors'
-import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import type { DirectoryDTO } from '@/filesystem/directories/directory'
-import { RootDirectory } from '@/filesystem/directories/root-directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { BinaryFile } from '@/filesystem/files/binary-file'
-import type { File } from '@/filesystem/files/file'
-import { TextFile, type TextFileDTO } from '@/filesystem/files/text-file'
 import assert from 'assert'
 import { expect, mock, test } from 'bun:test'
+import { InvalidArgument, PermissionDenied } from 'errors'
+import { NoSuchFileOrDirectory } from 'errors/filesystem'
+import type { DirectoryDTO } from 'filesystem/directories/directory'
+import { RootDirectory } from 'filesystem/directories/root-directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { BinaryFile } from 'filesystem/files/binary-file'
+import type { File } from 'filesystem/files/file'
+import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
 
 const parent = new RootDirectory({
     internalName: 'test',

@@ -1,4 +1,4 @@
-import { InvalidArgument, type UnixJsError } from '@/errors'
+import { InvalidArgument, type UnixJsError } from 'errors'
 
 export class ShellCommandFailure extends InvalidArgument {
     public constructor(command: string, exception: UnixJsError) {

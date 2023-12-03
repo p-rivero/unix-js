@@ -1,8 +1,8 @@
-import { PermissionDenied } from '@/errors'
-import { BINARY_FILE_REPRESENTATION } from '@/filesystem/constants'
-import type { Directory } from '@/filesystem/directories/directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { File, type FileDTO } from '@/filesystem/files/file'
+import { PermissionDenied } from 'errors'
+import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
+import type { Directory } from 'filesystem/directories/directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { File, type FileDTO } from 'filesystem/files/file'
 
 export type Executable = (context: ExecutionContext, args: string[]) => number | undefined
 

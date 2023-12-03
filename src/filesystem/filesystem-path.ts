@@ -1,5 +1,5 @@
-import { HOME_DIR, PATH_SEPARATOR } from '@/filesystem/constants'
 import assert from 'assert'
+import { HOME_DIR, PATH_SEPARATOR } from 'filesystem/constants'
 
 export class FilesystemPath {
 

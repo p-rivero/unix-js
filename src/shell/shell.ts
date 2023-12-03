@@ -1,9 +1,9 @@
-import { InvalidArgument, UnixJsError } from '@/errors'
-import { ShellCommandFailure } from '@/errors/shell'
-import { Directory } from '@/filesystem/directories/directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { File } from '@/filesystem/files/file'
 import assert from 'assert'
+import { InvalidArgument, UnixJsError } from 'errors'
+import { ShellCommandFailure } from 'errors/shell'
+import { Directory } from 'filesystem/directories/directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { File } from 'filesystem/files/file'
 
 export interface ShellConfig {
     readonly internalCommandDirectories: readonly string[]

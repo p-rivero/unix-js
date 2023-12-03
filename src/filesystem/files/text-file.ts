@@ -1,6 +1,6 @@
-import type { Directory } from '@/filesystem/directories/directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { File, type FileDTO } from '@/filesystem/files/file'
+import type { Directory } from 'filesystem/directories/directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { File, type FileDTO } from 'filesystem/files/file'
 
 export interface TextFileDTO extends FileDTO {
     readonly type: 'text-file'

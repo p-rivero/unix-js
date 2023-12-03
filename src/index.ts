@@ -1,1 +1,1 @@
-export { Shell } from './shell/shell'
+export { Shell } from 'shell/shell'

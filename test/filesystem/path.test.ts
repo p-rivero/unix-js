@@ -1,5 +1,5 @@
-import { FilesystemPath } from '@/filesystem/filesystem-path'
 import { expect, test } from 'bun:test'
+import { FilesystemPath } from 'filesystem/filesystem-path'
 
 test('can parse path', () => {
     const path = new FilesystemPath('/home/user')

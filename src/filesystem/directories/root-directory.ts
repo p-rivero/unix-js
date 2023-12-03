@@ -1,6 +1,6 @@
-import { PATH_SEPARATOR } from '@/filesystem/constants'
-import { Directory, type DirectoryDTO } from '@/filesystem/directories/directory'
-import type { FilesystemNode } from '@/filesystem/filesystem-node'
+import { PATH_SEPARATOR } from 'filesystem/constants'
+import { Directory, type DirectoryDTO } from 'filesystem/directories/directory'
+import type { FilesystemNode } from 'filesystem/filesystem-node'
 
 
 export class RootDirectory extends Directory {

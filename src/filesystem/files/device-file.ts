@@ -1,7 +1,7 @@
-import { PermissionDenied } from '@/errors'
-import type { Directory } from '@/filesystem/directories/directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { File, type FileDTO } from '@/filesystem/files/file'
+import { PermissionDenied } from 'errors'
+import type { Directory } from 'filesystem/directories/directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { File, type FileDTO } from 'filesystem/files/file'
 
 export interface DeviceFileDTO extends FileDTO {
     readonly type: 'device-file'

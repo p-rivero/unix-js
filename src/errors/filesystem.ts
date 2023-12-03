@@ -1,4 +1,4 @@
-import { UnixJsError } from '@/errors'
+import { UnixJsError } from 'errors'
 
 export abstract class FilesystemError extends UnixJsError { }
 

@@ -1,7 +1,7 @@
-import { PermissionDenied } from '@/errors'
-import type { Directory } from '@/filesystem/directories/directory'
-import type { ExecutionContext } from '@/filesystem/execution-context'
-import { FilesystemNode, type FilesystemNodeDTO } from '@/filesystem/filesystem-node'
+import { PermissionDenied } from 'errors'
+import type { Directory } from 'filesystem/directories/directory'
+import type { ExecutionContext } from 'filesystem/execution-context'
+import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
 

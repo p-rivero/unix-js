@@ -1,9 +1,9 @@
-import { InvalidArgument, PermissionDenied } from '@/errors'
-import { NoSuchFileOrDirectory } from '@/errors/filesystem'
-import { Directory, type DirectoryDTO } from '@/filesystem/directories/directory'
-import { RootDirectory } from '@/filesystem/directories/root-directory'
 import assert from 'assert'
 import { expect, test } from 'bun:test'
+import { InvalidArgument, PermissionDenied } from 'errors'
+import { NoSuchFileOrDirectory } from 'errors/filesystem'
+import { Directory, type DirectoryDTO } from 'filesystem/directories/directory'
+import { RootDirectory } from 'filesystem/directories/root-directory'
 
 test('directory can list files', () => {
     const dto: DirectoryDTO = {

@@ -16,10 +16,6 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "baseUrl": "./src",
-    "paths": {
-      // Root path
-      "@/*": ["*"],
-    },
     "types": [
       "bun-types" // add Bun global
     ]

@@ -1,11 +1,11 @@
-import { InternalError, InvalidArgument, PermissionDenied } from '@/errors'
-import { NoSuchFileOrDirectory, NotADirectory } from '@/errors/filesystem'
-import { PARENT_DIR, THIS_DIR } from '@/filesystem/constants'
-import { BinaryFile, type BinaryFileDTO } from '@/filesystem/files/binary-file'
-import { DeviceFile, type DeviceFileDTO } from '@/filesystem/files/device-file'
-import { TextFile, type TextFileDTO } from '@/filesystem/files/text-file'
-import { FilesystemNode, type FilesystemNodeDTO } from '@/filesystem/filesystem-node'
-import { assertUnique } from '@/utils/assert'
+import { InternalError, InvalidArgument, PermissionDenied } from 'errors'
+import { NoSuchFileOrDirectory, NotADirectory } from 'errors/filesystem'
+import { PARENT_DIR, THIS_DIR } from 'filesystem/constants'
+import { BinaryFile, type BinaryFileDTO } from 'filesystem/files/binary-file'
+import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
+import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
+import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
+import { assertUnique } from 'utils/assert'
 
 type FilesystemNodeChildDTO = DirectoryDTO | TextFileDTO | BinaryFileDTO | DeviceFileDTO
 
