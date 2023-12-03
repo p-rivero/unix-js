@@ -1,7 +1,7 @@
-import { InvalidArgument, type FakeTermError } from '@/errors'
+import { InvalidArgument, type UnixJsError } from '@/errors'
 
 export class ShellCommandFailure extends InvalidArgument {
-    public constructor(command: string, exception: FakeTermError) {
+    public constructor(command: string, exception: UnixJsError) {
         super(`${command}: ${exception.linuxDescription}`)
         this.name = 'ShellCommandFailure'
     }

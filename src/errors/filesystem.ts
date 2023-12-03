@@ -1,6 +1,6 @@
-import { FakeTermError } from '@/errors'
+import { UnixJsError } from '@/errors'
 
-export abstract class FilesystemError extends FakeTermError { }
+export abstract class FilesystemError extends UnixJsError { }
 
 export class NoSuchFileOrDirectory extends FilesystemError {
     public constructor() {

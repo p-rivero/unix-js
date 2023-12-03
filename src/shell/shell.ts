@@ -1,4 +1,4 @@
-import { FakeTermError, InvalidArgument } from '@/errors'
+import { InvalidArgument, UnixJsError } from '@/errors'
 import { ShellCommandFailure } from '@/errors/shell'
 import { Directory } from '@/filesystem/directories/directory'
 import type { ExecutionContext } from '@/filesystem/execution-context'
@@ -30,7 +30,7 @@ export class Shell {
         try {
             return commandFile.execute(this.context, args)
         } catch (error) {
-            if (error instanceof FakeTermError) {
+            if (error instanceof UnixJsError) {
                 throw new ShellCommandFailure(commandName, error)
             }
             throw error
@@ -72,7 +72,7 @@ export class Shell {
             assert(commandFile instanceof File)
             return commandFile
         } catch (error) {
-            if (error instanceof FakeTermError) {
+            if (error instanceof UnixJsError) {
                 throw new ShellCommandFailure(commandName, error)
             }
             throw error

@@ -1,4 +1,4 @@
-export abstract class FakeTermError extends Error {
+export abstract class UnixJsError extends Error {
     public readonly errno: number
     public readonly linuxName: string
     public readonly linuxDescription: string
@@ -11,21 +11,21 @@ export abstract class FakeTermError extends Error {
     }
 }
 
-export class InternalError extends FakeTermError {
+export class InternalError extends UnixJsError {
     public constructor(message: string) {
         super(message, 0, 'EINTERNAL', 'Internal error')
         this.name = 'InternalError'
     }
 }
 
-export class InvalidArgument extends FakeTermError {
+export class InvalidArgument extends UnixJsError {
     public constructor(message: string) {
         super(`Incorrect argument: ${message}`, 22, 'EINVAL', 'Invalid argument')
         this.name = 'IncorrectDeclaration'
     }
 }
 
-export class PermissionDenied extends FakeTermError {
+export class PermissionDenied extends UnixJsError {
     public constructor() {
         super('Used lacks permission to perform this action', 13, 'EACCES', 'Permission denied')
         this.name = 'PermissionDenied'
