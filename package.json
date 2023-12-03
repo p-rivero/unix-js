@@ -2,6 +2,14 @@
   "name": "unix-js",
   "module": "src/index.ts",
   "type": "module",
+  "version": "0.0.1",
+  "description": "Drop your users into an enhanced replica of your own filesystem",
+  "author": "p-rivero",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/p-rivero/unix-js"
+  },
   "exports": {
     ".": {
       "default": "./dist/index.js",
@@ -24,7 +32,7 @@
     "lint": "eslint src",
     "bundle": "bun run bundle:build && bun run bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
-    "bundle:types": "tsc --emitDeclarationOnly --project tsconfig.types.json"
+    "bundle:types": "tsc --project tsconfig.types.json"
   },
   "eslintConfig": {
     "root": true,
