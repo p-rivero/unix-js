@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/p-rivero/unix-js"
+    "url": "git+https://github.com/p-rivero/unix-js.git"
   },
   "exports": {
     ".": {
@@ -31,6 +31,7 @@
   },
   "scripts": {
     "lint": "eslint src",
+    "prepublishOnly": "bun run bundle",
     "bundle": "bun run bundle:build && bun run bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
     "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent"
