@@ -40,7 +40,7 @@ export abstract class File extends FilesystemNode {
         this.implementWrite(content)
     }
 
-    public execute(context: ExecutionContext, args: string[]): number {
+    public execute(context: ExecutionContext, args: readonly string[]): number {
         if (!this.executable) {
             throw new PermissionDenied()
         }

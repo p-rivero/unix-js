@@ -1,0 +1,39 @@
+{
+  "name": "unix-js",
+  "module": "src/index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Drop your users into an enhanced replica of your own filesystem",
+  "author": "p-rivero",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p-rivero/unix-js.git"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^1.4.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "bun-types": "latest",
+    "concurrently": "^8.2.2",
+    "dts-bundle-generator": "^9.0.0",
+    "eslint": "^8.54.0",
+    "eslint-plugin-only-warn": "^1.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "lint": "eslint src test",
+    "prepublishOnly": "bun run bundle",
+    "bundle": "bun run bundle:build && bun run bundle:types",
+    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
+    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent"
+  }
+}

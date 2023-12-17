@@ -5,33 +5,40 @@ import { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { File } from 'filesystem/files/file'
 
+export interface ShellConfigStartupCommand {
+    readonly command: string
+    readonly args: readonly string[]
+}
+
 export interface ShellConfig {
-    readonly internalCommandDirectories: readonly string[]
+    readonly commandDirectories: readonly string[]
     readonly stdinFile: string
     readonly stdoutFile: string
     readonly stderrFile: string
+    readonly startupCommand: ShellConfigStartupCommand
 }
 
 export class Shell {
     private readonly context: ExecutionContext
     private readonly commandDirectories: readonly Directory[]
+    private readonly startupCommand: ShellConfigStartupCommand
 
     public constructor(context: ExecutionContext, config: ShellConfig) {
         this.context = context
-        this.commandDirectories = config.internalCommandDirectories.map(path => this.internalGetDirectory(path))
+        this.commandDirectories = config.commandDirectories.map(path => this.internalGetDirectory(path))
         this.context.stdin = this.internalGetFile(config.stdinFile)
         this.context.stdout = this.internalGetFile(config.stdoutFile)
         this.context.stderr = this.internalGetFile(config.stderrFile)
+        this.startupCommand = config.startupCommand
     }
 
-    public execute(command: string): number {
-        const [commandName, ...args] = command.split(' ')
-        const commandFile = this.displayFindCommand(commandName)
+    public execute(): number {
+        const commandFile = this.displayFindCommand(this.startupCommand.command)
         try {
-            return commandFile.execute(this.context, args)
+            return commandFile.execute(this.context, this.startupCommand.args)
         } catch (error) {
             if (error instanceof UnixJsError) {
-                throw new ShellCommandFailure(commandName, error)
+                throw new ShellCommandFailure(this.startupCommand.command, error)
             }
             throw error
         }
