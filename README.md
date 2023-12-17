@@ -52,9 +52,15 @@ Since I wanted to avoid confusion and the ".js" suffix is widely used to indicat
 
 Development is done using [Bun](https://bun.sh/).
 
-First, install dependencies:
+This monorepo contains the following packages:
+
+- `lib`: The core library that implements the virtual filesystem and terminal.
+- `parser`: A parser for reading the user's directory and generating the virtual filesystem.
+
+First, go to the desired package and install the dependencies:
 
 ```bash
+cd lib
 bun install
 ```
 

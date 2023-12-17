@@ -3,5 +3,8 @@ module.exports = {
   parserOptions: {
     'project': './tsconfig.json'
   },
-  extends: ['../.eslintrc.cjs']
+  extends: ['../.eslintrc.cjs'],
+  rules: {
+    'no-console': 'off',
+  }
 }
