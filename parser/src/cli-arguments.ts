@@ -2,10 +2,12 @@ import { parse } from 'ts-command-line-args'
 
 export interface CliArguments {
     readonly inputDir: string
-    readonly outFile: string | null
+    readonly outFile: string
     readonly indent: number
     readonly help: boolean
 }
+
+export const OUT_FILE_STDOUT = '__stdout__'
 
 export function parseCliArgs(): CliArguments { // eslint-disable-line consistent-return -- False positive
     try {
@@ -21,7 +23,7 @@ export function parseCliArgs(): CliArguments { // eslint-disable-line consistent
                 type: String,
                 alias: 'o',
                 description: 'The output file where the results will be written. Defaults to stdout.',
-                defaultValue: null
+                defaultValue: OUT_FILE_STDOUT
             },
             indent: {
                 type: Number,
