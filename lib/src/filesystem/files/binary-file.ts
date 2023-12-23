@@ -8,7 +8,7 @@ export type Executable = (context: ExecutionContext, args: string[]) => number |
 
 export interface BinaryFileDTO extends FileDTO {
     readonly type: 'binary-file'
-    readonly permissions: 'read-only' | 'execute'
+    readonly permissions?: 'read-only' | 'execute'
     readonly executable: Executable
 }
 

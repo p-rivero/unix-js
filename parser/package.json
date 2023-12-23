@@ -24,6 +24,7 @@
     "dts-bundle-generator": "^9.0.0",
     "eslint": "^8.54.0",
     "eslint-plugin-only-warn": "^1.1.0",
+    "ts-auto-guard": "^4.1.4",
     "unix-js-lib": "../lib"
   },
   "peerDependencies": {
@@ -32,9 +33,10 @@
   "scripts": {
     "lint": "eslint src test",
     "prepublishOnly": "bun run bundle",
-    "bundle": "bun run bundle:build && bun run bundle:types",
+    "bundle": "bun run generate-type-guards && bun run bundle:build && bun run bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
-    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent"
+    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent",
+    "generate-type-guards": "ts-auto-guard --project tsconfig.json"
   },
   "dependencies": {
     "ts-command-line-args": "^2.5.1"
