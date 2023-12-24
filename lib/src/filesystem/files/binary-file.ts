@@ -6,10 +6,14 @@ import { File, type FileDTO } from 'filesystem/files/file'
 
 export type Executable = (context: ExecutionContext, args: string[]) => number | undefined
 
+export interface BinaryFileMethods {
+    execute: Executable
+}
+
 export interface BinaryFileDTO extends FileDTO {
     readonly type: 'binary-file'
     readonly permissions?: 'read-only' | 'execute'
-    readonly executable: Executable
+    readonly generator: () => BinaryFileMethods
 }
 
 export class BinaryFile extends File {
@@ -17,7 +21,7 @@ export class BinaryFile extends File {
 
     public constructor(dto: BinaryFileDTO, parent: Directory) {
         super(dto, parent)
-        this.content = dto.executable
+        this.content = dto.generator().execute
     }
 
     public override implementRead(): string {

@@ -16,6 +16,11 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "terser": "^5.26.0",
+    "ts-command-line-args": "^2.5.1"
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^1.4.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
@@ -32,14 +37,11 @@
   },
   "scripts": {
     "lint": "eslint src test",
-    "prepublishOnly": "bun run bundle",
-    "bundle": "bun run generate-type-guards && bun run bundle:build && bun run bundle:types",
+    "prepublishOnly": "bun bundle",
+    "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build && bun bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
     "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent",
-    "generate-type-guards": "ts-auto-guard --project tsconfig.json"
-  },
-  "dependencies": {
-    "colors": "^1.4.0",
-    "ts-command-line-args": "^2.5.1"
+    "generate-type-guards": "ts-auto-guard --paths src/**/*.ts",
+    "typecheck": "tsc --noEmit"
   }
 }

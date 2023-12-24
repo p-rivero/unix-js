@@ -2,7 +2,7 @@ import fs from 'fs'
 import { printWarning } from 'parser'
 import type { AccessType, FilePermission } from 'unix-js-lib'
 
-const METADATA_EXTENSION = '.meta.json'
+export const METADATA_EXTENSION = '.meta.json'
 
 export interface UnixJSMetadata {
     readonly displayName?: string

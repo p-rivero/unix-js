@@ -1,43 +1,68 @@
-import { ParserWarning } from 'parser'
-import { isBinaryFileFunctions, isDeviceFileFunctions } from 'parser/eval-module.guard'
-import path from 'path'
+import { ParserError, ParserWarning } from 'parser'
+import { isBinaryFileMethods, isDeviceFileMethods } from 'parser/eval-module.guard'
+import { minify } from 'terser'
 
-/** @see {isDeviceFileFunctions} ts-auto-guard:type-guard */
-export interface DeviceFileFunctions {
-    read: () => string
-    write: (content: string) => void
+/** @see {isBinaryFileMethods} ts-auto-guard:type-guard */
+export interface BinaryFileMethods {
+    execute: () => number | undefined
 }
 
-/** @see {isBinaryFileFunctions} ts-auto-guard:type-guard */
-export interface BinaryFileFunctions {
-    execute: (context: object, args: string[]) => number | undefined
+/** @see {isDeviceFileMethods} ts-auto-guard:type-guard */
+export interface DeviceFileMethods {
+    read?: () => string
+    write?: () => void
 }
 
+async function wrapModule(internalPath: string, externalPath: string, source: string): Promise<unknown> {
+    const wrapper = `() => {
+        const module = {
+            id: "${internalPath}",
+            filename: "${externalPath}",
+            exports: {},
+        };
+        ((module, exports) => {
+            ${source}
+        })(module, module.exports);
+        return module.exports;
+    }`
+    const { code } = await minify(wrapper)
+    if (code === undefined) {
+        throw new ParserError(`Error minifying code for file ${internalPath}`)
+    }
+    return new Function(code)
+}
 
-export async function evaluateDeviceFileModule(relativePath: string): Promise<DeviceFileFunctions> {
+async function evaluateModule<T>(internalPath: string, externalPath: string, source: string, validator: (fn: unknown) => fn is T): Promise<() => T> {
+    function isGeneratorFunction(fn: unknown): fn is () => T {
+        if (typeof fn !== 'function') {
+            return false
+        }
+        const result = fn() as unknown
+        return validator(result)
+    }
     try {
-        const absolutePath = path.resolve(relativePath)
-        const mod = await import(absolutePath) as unknown
-        if (isDeviceFileFunctions(mod)) {
-            return mod
+        const fn = await wrapModule(internalPath, externalPath, source)
+        if (isGeneratorFunction(fn)) {
+            return fn
         }
     } catch (error) {
+        if (error instanceof ParserError) {
+            throw error
+        }
+        if (error instanceof Error && error.name === 'SyntaxError') {
+            const { message, line } = error
+            throw new ParserError(`Syntax error in file ${'TODO'} [${internalPath}], line ${line - 7}:\n    ${message}`)
+        }
         console.error(error)
-        throw new ParserWarning(`Error evaluating code for device file ${relativePath}`)
+        throw new ParserWarning(`Error evaluating code for file ${internalPath}`)
     }
-    throw new ParserWarning(`Invalid device file: ${relativePath}, make sure it exports the required functions 'read' and 'write'. Ignoring file.`)
+    throw new ParserWarning(`Invalid executable: ${internalPath}, make sure it exports the required functions. Ignoring file.`)
 }
 
-export async function evaluateBinaryFileModule(relativePath: string): Promise<BinaryFileFunctions> {
-    try {
-        const absolutePath = path.resolve(relativePath)
-        const mod = await import(absolutePath) as unknown
-        if (isBinaryFileFunctions(mod)) {
-            return mod
-        }
-    } catch (error) {
-        console.error(error)
-        throw new ParserWarning(`Error evaluating code for binary file ${relativePath}`)
-    }
-    throw new ParserWarning(`Invalid binary file: ${relativePath}, make sure it exports the required function 'execute'. Ignoring file.`)
+export async function evaluateDeviceFileModule(internalPath: string, externalPath: string, source: string): Promise<() => DeviceFileMethods> {
+    return evaluateModule(internalPath, externalPath, source, isDeviceFileMethods)
+}
+
+export async function evaluateBinaryFileModule(internalPath: string, externalPath: string, source: string): Promise<() => BinaryFileMethods> {
+    return evaluateModule(internalPath, externalPath, source, isBinaryFileMethods)
 }

@@ -102,7 +102,9 @@ test('user cannot access locked binary file', () => {
                 type: 'binary-file',
                 accessType: 'locked',
                 permissions: 'read-only',
-                executable: () => 123 + 456
+                generator: () => ({
+                    execute: () => 123 + 456
+                })
             }
         ]
     }
@@ -128,8 +130,10 @@ test('user cannot access hidden device file', () => {
                 type: 'device-file',
                 accessType: 'hidden',
                 permissions: 'read-write',
-                onRead: () => 'top secret',
-                onWrite: () => 0
+                generator: () => ({
+                    read: () => 'top secret',
+                    write: () => 0
+                })
             }
         ]
     }
@@ -148,7 +152,9 @@ test('supports binary files', () => {
                 internalName: 'bin-file',
                 type: 'binary-file',
                 permissions: 'read-only',
-                executable: () => 123 + 456
+                generator: () => ({
+                    execute: () => 123 + 456
+                })
             }
         ]
     }
@@ -170,11 +176,13 @@ test('binary files can be executable', () => {
                 displayName: 'bin-file',
                 type: 'binary-file',
                 permissions: 'execute',
-                executable: (streams, args) => {
-                    expect(args).toEqual(['/bin-file', 'world'])
-                    streams.stdout.write('Hello World')
-                    return 123
-                }
+                generator: () => ({
+                    execute: (streams, args) => {
+                        expect(args).toEqual(['/bin-file', 'world'])
+                        streams.stdout.write('Hello World')
+                        return 123
+                    }
+                })
             }
         ]
     }

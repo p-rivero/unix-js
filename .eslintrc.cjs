@@ -32,6 +32,7 @@ module.exports = {
     'id-length': 'off',
     'func-style': [ 'error', 'declaration', { 'allowArrowFunctions': true } ],
     'no-ternary': 'off',
+    'no-undefined': 'off',
     'max-statements': 'off',
     '@typescript-eslint/consistent-type-imports': [ 'error', { 'fixStyle': 'inline-type-imports' } ],
     '@typescript-eslint/object-curly-spacing': [ 'error', 'always' ],

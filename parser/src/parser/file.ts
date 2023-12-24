@@ -2,7 +2,7 @@
 import fs from 'fs'
 import { SkipMetadataFile, printWarning } from 'parser'
 import { evaluateBinaryFileModule, evaluateDeviceFileModule } from 'parser/eval-module'
-import { extractBaseName, getMetadata } from 'parser/metadata'
+import { METADATA_EXTENSION, extractBaseName, getMetadata } from 'parser/metadata'
 import { isFileMetadata } from 'parser/metadata.guard'
 
 import type { FilePermission, FilesystemNodeChildDTO } from 'unix-js-lib'
@@ -24,10 +24,10 @@ function filterDeviceFilePermissions(permissions: FilePermission | undefined, fi
 }
 
 export async function parseFile(filePath: string): Promise<FilesystemNodeChildDTO> {
-    if (filePath.endsWith('.meta.json')) {
+    if (filePath.endsWith(METADATA_EXTENSION)) {
         throw new SkipMetadataFile()
     }
-    console.log(`Parsing file '${filePath}'...`)
+    console.warn(`Parsing file '${filePath}'...`)
     const fileContents = fs.readFileSync(filePath, 'utf-8')
     const metadata = getMetadata(filePath, isFileMetadata) ?? {}
 
@@ -40,22 +40,19 @@ export async function parseFile(filePath: string): Promise<FilesystemNodeChildDT
 
     switch (metadata.fileType) {
         case 'binary': {
-            const mod = await evaluateBinaryFileModule(filePath)
             return {
                 ...commonAttributes,
                 type: 'binary-file',
-                executable: mod.execute,
-                permissions: filterBinaryFilePermissions(metadata.permissions, filePath)
+                permissions: filterBinaryFilePermissions(metadata.permissions, filePath),
+                generator: await evaluateBinaryFileModule('TODO', 'TODO', fileContents)
             }
         }
         case 'device': {
-            const mod = await evaluateDeviceFileModule(filePath)
             return {
                 ...commonAttributes,
                 type: 'device-file',
-                onRead: mod.read,
-                onWrite: mod.write,
-                permissions: filterDeviceFilePermissions(metadata.permissions, filePath)
+                permissions: filterDeviceFilePermissions(metadata.permissions, filePath),
+                generator: await evaluateDeviceFileModule('TODO', 'TODO', fileContents)
             }
         }
         default:

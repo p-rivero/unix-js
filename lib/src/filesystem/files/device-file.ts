@@ -3,11 +3,15 @@ import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { File, type FileDTO } from 'filesystem/files/file'
 
+export interface DeviceFileMethods {
+    read?: () => string
+    write?: (content: string) => void
+}
+
 export interface DeviceFileDTO extends FileDTO {
     readonly type: 'device-file'
     readonly permissions?: 'read-only' | 'read-write'
-    readonly onRead?: () => string
-    readonly onWrite?: (content: string) => void
+    readonly generator: () => DeviceFileMethods
 }
 
 export class DeviceFile extends File {
@@ -19,8 +23,9 @@ export class DeviceFile extends File {
             throw new PermissionDenied()
         }
         super(dto, parent)
-        this.onRead = dto.onRead ?? permissionDenied
-        this.onWrite = dto.onWrite ?? permissionDenied
+        const methods = dto.generator()
+        this.onRead = methods.read ?? permissionDenied
+        this.onWrite = methods.write ?? permissionDenied
     }
 
     public override implementRead(): string {

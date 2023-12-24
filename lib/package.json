@@ -30,9 +30,10 @@
   },
   "scripts": {
     "lint": "eslint src test",
-    "prepublishOnly": "bun run bundle",
-    "bundle": "bun run bundle:build && bun run bundle:types",
+    "prepublishOnly": "bun bundle",
+    "bundle": "bun typecheck && bun bundle:build && bun bundle:types",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
-    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent"
+    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent",
+    "typecheck": "tsc --noEmit"
   }
 }

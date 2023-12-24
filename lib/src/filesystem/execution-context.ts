@@ -110,18 +110,22 @@ export class ExecutionContext {
             internalName: 'pipeIn',
             type: 'device-file',
             permissions: 'read-only',
-            onRead: () => {
-                const content = buffer.join('')
-                buffer.splice(0, buffer.length)
-                return content
-            }
+            generator: () => ({
+                read: () => {
+                    const content = buffer.join('')
+                    buffer.splice(0, buffer.length)
+                    return content
+                }
+            })
         }, this.currentDirectory)
     
         const pipeIn = new DeviceFile({
             internalName: 'pipeOut',
             type: 'device-file',
             permissions: 'read-write',
-            onWrite: content => buffer.push(content)
+            generator: () => ({
+                write: content => buffer.push(content)
+            })
         }, this.currentDirectory)
         
         return [pipeIn, pipeOut]
