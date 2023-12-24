@@ -39,6 +39,7 @@
     "generate-type-guards": "ts-auto-guard --project tsconfig.json"
   },
   "dependencies": {
+    "colors": "^1.4.0",
     "ts-command-line-args": "^2.5.1"
   }
 }

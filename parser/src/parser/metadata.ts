@@ -1,7 +1,8 @@
 import fs from 'fs'
+import { printWarning } from 'parser'
 import type { AccessType, FilePermission } from 'unix-js-lib'
 
-const METADATA_EXTENSION = '.unixjs.json'
+const METADATA_EXTENSION = '.meta.json'
 
 export interface UnixJSMetadata {
     readonly displayName?: string
@@ -24,13 +25,20 @@ export function getMetadata<T>(filePath: string, validator: (obj: unknown) => ob
     if (!fs.existsSync(metadataPath)) {
         return null
     }
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
-    const json = JSON.parse(fileContent) as unknown
-    if (validator(json)) {
-        return json
+    const fileContent = fs.readFileSync(metadataPath, 'utf-8')
+    try {
+        const json = JSON.parse(fileContent) as unknown
+        if (validator(json)) {
+            return json
+        }
+        throw new Error('JSON object does not match expected schema.')
+    } catch (e) {
+        if (!(e instanceof Error)) {
+            throw e
+        }
+        printWarning(`Ignoring metadata file "${metadataPath}" due to error: ${e.message}`)
+        return null
     }
-    console.warn(`Invalid metadata file: ${metadataPath}, using defaults.`)
-    return null
 }
 
 export function extractBaseName(filePath: string): string {

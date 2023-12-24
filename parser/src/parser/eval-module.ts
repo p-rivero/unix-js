@@ -1,4 +1,6 @@
+import { ParserWarning } from 'parser'
 import { isBinaryFileFunctions, isDeviceFileFunctions } from 'parser/eval-module.guard'
+import path from 'path'
 
 /** @see {isDeviceFileFunctions} ts-auto-guard:type-guard */
 export interface DeviceFileFunctions {
@@ -12,28 +14,30 @@ export interface BinaryFileFunctions {
 }
 
 
-export async function evaluateDeviceFileModule(path: string): Promise<DeviceFileFunctions> {
+export async function evaluateDeviceFileModule(relativePath: string): Promise<DeviceFileFunctions> {
     try {
-        const mod = await import(path) as unknown
+        const absolutePath = path.resolve(relativePath)
+        const mod = await import(absolutePath) as unknown
         if (isDeviceFileFunctions(mod)) {
             return mod
         }
-        throw Error(`Invalid device file: ${path}, make sure it exports the required functions 'read' and 'write'. Ignoring file.`)
     } catch (error) {
         console.error(error)
-        throw Error(`Error evaluating code for device file ${path}`)
+        throw new ParserWarning(`Error evaluating code for device file ${relativePath}`)
     }
+    throw new ParserWarning(`Invalid device file: ${relativePath}, make sure it exports the required functions 'read' and 'write'. Ignoring file.`)
 }
 
-export async function evaluateBinaryFileModule(path: string): Promise<BinaryFileFunctions> {
+export async function evaluateBinaryFileModule(relativePath: string): Promise<BinaryFileFunctions> {
     try {
-        const mod = await import(path) as unknown
+        const absolutePath = path.resolve(relativePath)
+        const mod = await import(absolutePath) as unknown
         if (isBinaryFileFunctions(mod)) {
             return mod
         }
-        throw Error(`Invalid binary file: ${path}, make sure it exports the required function 'execute'. Ignoring file.`)
     } catch (error) {
         console.error(error)
-        throw Error(`Error evaluating code for binary file ${path}`)
+        throw new ParserWarning(`Error evaluating code for binary file ${relativePath}`)
     }
+    throw new ParserWarning(`Invalid binary file: ${relativePath}, make sure it exports the required function 'execute'. Ignoring file.`)
 }
