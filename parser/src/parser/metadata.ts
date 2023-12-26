@@ -18,6 +18,7 @@ export interface FileMetadata extends UnixJSMetadata {
 /** @see {isDirectoryMetadata} ts-auto-guard:type-guard */
 export interface DirectoryMetadata extends UnixJSMetadata {
     readonly isCommandDir?: boolean
+    readonly isHomeDir?: boolean
 }
 
 export function getMetadata<T>(filePath: string, validator: (obj: unknown) => obj is T): T | null {
@@ -41,7 +42,3 @@ export function getMetadata<T>(filePath: string, validator: (obj: unknown) => ob
     }
 }
 
-export function extractBaseName(filePath: string): string {
-    const parts = filePath.split('/')
-    return parts[parts.length - 1]
-}

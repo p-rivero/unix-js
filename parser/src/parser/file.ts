@@ -1,8 +1,9 @@
 
 import fs from 'fs'
 import { SkipMetadataFile, printWarning } from 'parser'
-import { evaluateBinaryFileModule, evaluateDeviceFileModule } from 'parser/eval-module'
-import { METADATA_EXTENSION, extractBaseName, getMetadata } from 'parser/metadata'
+import { parseBinaryFile, parseDeviceFile } from 'parser/executable-file'
+import { FileInfo } from 'parser/file-info'
+import { METADATA_EXTENSION, getMetadata } from 'parser/metadata'
 import { isFileMetadata } from 'parser/metadata.guard'
 
 import type { FilePermission, FilesystemNodeChildDTO } from 'unix-js-lib'
@@ -23,16 +24,15 @@ function filterDeviceFilePermissions(permissions: FilePermission | undefined, fi
     return permissions
 }
 
-export async function parseFile(filePath: string): Promise<FilesystemNodeChildDTO> {
+export async function parseFile(parent: FileInfo, filePath: string): Promise<FilesystemNodeChildDTO> {
     if (filePath.endsWith(METADATA_EXTENSION)) {
         throw new SkipMetadataFile()
     }
-    console.warn(`Parsing file '${filePath}'...`)
-    const fileContents = fs.readFileSync(filePath, 'utf-8')
     const metadata = getMetadata(filePath, isFileMetadata) ?? {}
 
+    const file = new FileInfo(parent, filePath, metadata.displayName)
     const commonAttributes = {
-        internalName: extractBaseName(filePath),
+        internalName: file.internalName,
         displayName: metadata.displayName,
         permissions: metadata.permissions,
         accessType: metadata.accessType
@@ -44,7 +44,7 @@ export async function parseFile(filePath: string): Promise<FilesystemNodeChildDT
                 ...commonAttributes,
                 type: 'binary-file',
                 permissions: filterBinaryFilePermissions(metadata.permissions, filePath),
-                generator: await evaluateBinaryFileModule('TODO', 'TODO', fileContents)
+                generator: await parseBinaryFile(file)
             }
         }
         case 'device': {
@@ -52,15 +52,17 @@ export async function parseFile(filePath: string): Promise<FilesystemNodeChildDT
                 ...commonAttributes,
                 type: 'device-file',
                 permissions: filterDeviceFilePermissions(metadata.permissions, filePath),
-                generator: await evaluateDeviceFileModule('TODO', 'TODO', fileContents)
+                generator: await parseDeviceFile(file)
             }
         }
-        default:
+        default: {
+            const fileContents = fs.readFileSync(filePath, 'utf-8')
             return {
                 ...commonAttributes,
                 type: 'text-file',
                 content: fileContents
             }
+        }
     }
 }
 

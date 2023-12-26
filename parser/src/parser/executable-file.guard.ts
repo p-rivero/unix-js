@@ -1,8 +1,8 @@
 /*
- * Generated type guards for "eval-module.ts".
+ * Generated type guards for "executable-file.ts".
  * WARNING: Do not manually change this file.
  */
-import { BinaryFileMethods, DeviceFileMethods } from "./eval-module";
+import { BinaryFileMethods, DeviceFileMethods } from "./executable-file";
 
 export function isBinaryFileMethods(obj: unknown): obj is BinaryFileMethods {
     const typedObj = obj as BinaryFileMethods

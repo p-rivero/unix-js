@@ -1,10 +1,11 @@
 import { OUT_FILE_STDOUT, parseCliArgs } from 'cli-arguments'
 import fs from 'fs'
 import { parseDirectory } from 'parser/directory'
+import { serializeObject } from 'serialize-object'
 
 const options = parseCliArgs()
-const result = await parseDirectory(options.inputDir)
-const resultString = `export default ${JSON.stringify(result, null, options.indent)}`
+const result = await parseDirectory(null, options.inputDir)
+const resultString = `export default ${serializeObject(result, options.indent)}`
 
 if (options.outFile === OUT_FILE_STDOUT) {
     console.log(resultString)

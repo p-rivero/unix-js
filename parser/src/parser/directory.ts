@@ -1,32 +1,39 @@
 import fs from 'fs'
 import { ParserError, ParserWarning, SkipMetadataFile, printWarning } from 'parser'
 import { parseFile } from 'parser/file'
-import { extractBaseName, getMetadata } from 'parser/metadata'
+import { FileInfo } from 'parser/file-info'
+import { getMetadata } from 'parser/metadata'
 import { isDirectoryMetadata } from 'parser/metadata.guard'
 
 import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-js-lib'
 
-export async function parseDirectory(directoryPath: string): Promise<DirectoryDTO> {
+export async function parseDirectory(parent: FileInfo | null, directoryPath: string): Promise<DirectoryDTO> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}
+    const directory = new FileInfo(parent, directoryPath, metadata.displayName)
+    let { displayName } = metadata
+    if (parent === null && metadata.displayName !== undefined) {
+        printWarning(`Root directory (${directoryPath}) has a display name (${displayName}), which will be ignored.`)
+        displayName = undefined
+    }
     return {
         type: 'directory',
-        internalName: extractBaseName(directoryPath),
-        displayName: metadata.displayName,
+        internalName: directory.internalName,
+        displayName,
         accessType: metadata.accessType,
-        children: await parseChildren(directoryPath) // eslint-disable-line @typescript-eslint/no-use-before-define
+        children: await parseChildren(directory) // eslint-disable-line @typescript-eslint/no-use-before-define
     }
 }
 
-async function parseChildren(directoryPath: string): Promise<FilesystemNodeChildDTO[]> {
-    const directory = fs.readdirSync(directoryPath).map(name => `${directoryPath}/${name}`)
-    const childDirectoryNames = directory.filter(name => fs.statSync(name).isDirectory())
+async function parseChildren(directory: FileInfo): Promise<FilesystemNodeChildDTO[]> {
+    const children = fs.readdirSync(directory.realPath).map(name => `${directory.realPath}/${name}`)
+    const childDirectories = children.filter(path => fs.statSync(path).isDirectory())
     const results: FilesystemNodeChildDTO[] = []
-    await Promise.all(directory.map(async(name) => {
+    await Promise.all(children.map(async path => {
         try {
-            if (childDirectoryNames.includes(name)) {
-                results.push(await parseDirectory(name))
+            if (childDirectories.includes(path)) {
+                results.push(await parseDirectory(directory, path))
             } else {
-                results.push(await parseFile(name))
+                results.push(await parseFile(directory, path))
             }
         } catch (e) {
             if (e instanceof SkipMetadataFile) {
@@ -36,7 +43,7 @@ async function parseChildren(directoryPath: string): Promise<FilesystemNodeChild
             } else if (e instanceof ParserError) {
                 console.error(e.message)
             } else {
-                console.error(`Failed to parse '${name}':`)
+                console.error(`Failed to parse '${path}':`)
                 console.error(e)
             }
         }
