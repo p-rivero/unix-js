@@ -3,6 +3,7 @@ import { ParserError, ParserWarning } from 'parser'
 import { isBinaryFileMethods, isDeviceFileMethods } from 'parser/executable-file.guard'
 import type { FileInfo } from 'parser/file-info'
 import { minify } from 'terser'
+import ts from 'typescript'
 
 /** @see {isBinaryFileMethods} ts-auto-guard:type-guard */
 export interface BinaryFileMethods {
@@ -20,27 +21,46 @@ interface TerserSyntaxError extends Error {
     line: number
 }
 
-const HEADER_LINES = 7
+function removeBoilerplate(code: string): string {
+    return code
+        .replace('Object.defineProperty(exports, "__esModule", { value: true });', '')
+        .replace(/exports\.\w* = void 0;/gu, '')
+}
 
-async function wrapAndMinify(file: FileInfo): Promise<unknown> {
-    const wrapperCode = `
+function wrapSourceCode(file: FileInfo): string {
+    const jsCode = ts.transpile(fs.readFileSync(file.realPath, 'utf-8'), {
+        allowJs: true,
+        checkJs: true,
+        noImplicitUseStrict: true,
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ESNext
+    })
+    return `
         const m = {
             id: "${file.internalPath}",
             filename: "${file.displayPath}",
             exports: {},
         };
         ((module, exports) => {
-            ${fs.readFileSync(file.realPath, 'utf-8')}
+            ${removeBoilerplate(jsCode)}
         })(m, m.exports);
         return m.exports;
     `
+}
+
+async function minifyAndCheck(source: string): Promise<unknown> {
     // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase -- terser uses snake_case
-    const { code } = await minify(wrapperCode, { parse: { bare_returns: true } })
-    if (code === undefined) {
-        throw new ParserError(`Error minifying code for ${file.toString()}`)
+    const { code: minifiedCode } = await minify(source, { parse: { bare_returns: true } })
+    if (minifiedCode === undefined) {
+        throw new ParserError('Error minifying code')
     }
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func -- cannot be avoided
-    return new Function(code)
+    return new Function(minifiedCode)
+}
+
+function getCodeLine(code: string, line: number): string {
+    const lineSrc = code.split('\n')[line - 1].trim()
+    return `\t${lineSrc}\n\t${'^'.repeat(lineSrc.length)}`
 }
 
 async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) => fn is T): Promise<() => T> {
@@ -51,8 +71,9 @@ async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) =
         const result = fn() as unknown
         return validator(result)
     }
+    const sourceCode: string = wrapSourceCode(file)
     try {
-        const fn = await wrapAndMinify(file)
+        const fn = await minifyAndCheck(sourceCode)
         if (isGeneratorFunction(fn)) {
             return fn
         }
@@ -62,7 +83,7 @@ async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) =
         }
         if (error instanceof Error && error.name === 'SyntaxError') {
             const { message, line } = error as TerserSyntaxError
-            throw new ParserError(`Syntax error in ${file.toString()}, line ${line - HEADER_LINES}:\n\t${message}`)
+            throw new ParserError(`Syntax error in ${file.toString()}:\n${getCodeLine(sourceCode, line)}\n\t${message}`)
         }
         console.error(error)
         throw new ParserWarning(`Error evaluating code for ${file.toString()}`)

@@ -5,7 +5,7 @@ import { serializeObject } from 'serialize-object'
 
 const options = parseCliArgs()
 const result = await parseDirectory(null, options.inputDir)
-const resultString = `export default ${serializeObject(result, options.indent)}`
+const resultString = `/* eslint-disable */\nexport default ${serializeObject(result, options.indent)}`
 
 if (options.outFile === OUT_FILE_STDOUT) {
     console.log(resultString)
