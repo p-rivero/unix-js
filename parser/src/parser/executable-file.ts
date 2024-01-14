@@ -24,7 +24,7 @@ interface TerserSyntaxError extends Error {
 function removeBoilerplate(code: string): string {
     return code
         .replace('Object.defineProperty(exports, "__esModule", { value: true });', '')
-        .replace(/exports\.\w* = void 0;/gu, '')
+        .replace(/(?:exports\.\w* = )+void 0;/gu, '')
 }
 
 function wrapSourceCode(file: FileInfo): string {
@@ -63,7 +63,7 @@ function getCodeLine(code: string, line: number): string {
     return `\t${lineSrc}\n\t${'^'.repeat(lineSrc.length)}`
 }
 
-async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) => fn is T): Promise<() => T> {
+async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) => fn is T, validatorFailMsg: string): Promise<() => T> {
     function isGeneratorFunction(fn: unknown): fn is () => T {
         if (typeof fn !== 'function') {
             return false
@@ -88,13 +88,15 @@ async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) =
         console.error(error)
         throw new ParserWarning(`Error evaluating code for ${file.toString()}`)
     }
-    throw new ParserWarning(`Invalid executable: ${file.toString()}, make sure it exports the required functions. Ignoring file.`)
+    throw new ParserWarning(validatorFailMsg)
 }
 
 export async function parseDeviceFile(file: FileInfo): Promise<() => DeviceFileMethods> {
-    return parseExecutableFile(file, isDeviceFileMethods)
+    const validatorFailMsg = `Invalid device file: ${file.toString()}, make sure it exports the required functions "read" and "write". Ignoring file.`
+    return parseExecutableFile(file, isDeviceFileMethods, validatorFailMsg)
 }
 
 export async function parseBinaryFile(file: FileInfo): Promise<() => BinaryFileMethods> {
-    return parseExecutableFile(file, isBinaryFileMethods)
+    const validatorFailMsg = `Invalid binary file: ${file.toString()}, make sure it exports the required function "execute". Ignoring file.`
+    return parseExecutableFile(file, isBinaryFileMethods, validatorFailMsg)
 }
