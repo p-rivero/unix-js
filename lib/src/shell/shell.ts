@@ -10,11 +10,14 @@ export interface ShellConfigStartupCommand {
     readonly args: readonly string[]
 }
 
+export interface ShellConfigStandardStream {
+    readonly index: number
+    readonly internalPath: string
+}
+
 export interface ShellConfig {
     readonly commandDirectories: readonly string[]
-    readonly stdinFile: string
-    readonly stdoutFile: string
-    readonly stderrFile: string
+    readonly standardStreams: ShellConfigStandardStream[]
     readonly startupCommand: ShellConfigStartupCommand
 }
 
@@ -26,16 +29,17 @@ export class Shell {
     public constructor(context: ExecutionContext, config: ShellConfig) {
         this.context = context
         this.commandDirectories = config.commandDirectories.map(path => this.internalGetDirectory(path))
-        this.context.stdin = this.internalGetFile(config.stdinFile)
-        this.context.stdout = this.internalGetFile(config.stdoutFile)
-        this.context.stderr = this.internalGetFile(config.stderrFile)
+        for (const { index, internalPath } of config.standardStreams) {
+            const file = this.internalGetFile(internalPath)
+            this.context.setFileStream(index, file)
+        }
         this.startupCommand = config.startupCommand
     }
 
-    public execute(): number {
+    public async start(): Promise<number> {
         const commandFile = this.displayFindCommand(this.startupCommand.command)
         try {
-            return commandFile.execute(this.context, this.startupCommand.args)
+            return await commandFile.execute(this.context, this.startupCommand.args)
         } catch (error) {
             if (error instanceof UnixJsError) {
                 throw new ShellCommandFailure(this.startupCommand.command, error)

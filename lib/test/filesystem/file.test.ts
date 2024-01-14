@@ -68,8 +68,8 @@ test('user cannot access locked file', () => {
     expect(lockedFile.displayAbsolutePath).toEqual('/locked-file.txt')
     expect(lockedFile.readable).toEqual(false)
     expect(lockedFile.writable).toEqual(false)
-    expect(() => lockedFile.read()).toThrow(new PermissionDenied())
-    expect(() => lockedFile.write('foo')).toThrow(new PermissionDenied())
+    expect(async() => lockedFile.read()).toThrow(new PermissionDenied())
+    expect(async() => lockedFile.write('foo')).toThrow(new PermissionDenied())
 })
 
 test('user cannot access hidden file', () => {
@@ -116,8 +116,8 @@ test('user cannot access locked binary file', () => {
     expect(lockedFile.displayAbsolutePath).toEqual('/locked-file.txt')
     expect(lockedFile.readable).toEqual(false)
     expect(lockedFile.writable).toEqual(false)
-    expect(() => lockedFile.read()).toThrow(new PermissionDenied())
-    expect(() => lockedFile.write('foo')).toThrow(new PermissionDenied())
+    expect(async() => lockedFile.read()).toThrow(new PermissionDenied())
+    expect(async() => lockedFile.write('foo')).toThrow(new PermissionDenied())
 })
 
 test('user cannot access hidden device file', () => {
@@ -132,7 +132,9 @@ test('user cannot access hidden device file', () => {
                 permissions: 'read-write',
                 generator: () => ({
                     read: () => 'top secret',
-                    write: () => 0
+                    write: () => { 
+                        // do nothing
+                    }
                 })
             }
         ]
@@ -143,7 +145,7 @@ test('user cannot access hidden device file', () => {
     expect(() => dir.internalGetChild('hidden-file.txt')).not.toThrow()
 })
 
-test('supports binary files', () => {
+test('supports binary files', async() => {
     const dto: DirectoryDTO = {
         internalName: 'root-dir',
         type: 'directory',
@@ -162,11 +164,11 @@ test('supports binary files', () => {
     assert(file instanceof BinaryFile)
     expect(file.readable).toEqual(true)
     expect(file.writable).toEqual(false)
-    expect(file.read()).toEqual('\n** Binary file **\n')
-    expect(() => file.write('foo')).toThrow(new PermissionDenied())
+    expect(await file.read()).toEqual('\n** Binary file **\n')
+    expect(async() => file.write('foo')).toThrow(new PermissionDenied())
 })
 
-test('binary files can be executable', () => {
+test('binary files can be executable', async() => {
     const dto: DirectoryDTO = {
         internalName: 'root-dir',
         type: 'directory',
@@ -177,9 +179,9 @@ test('binary files can be executable', () => {
                 type: 'binary-file',
                 permissions: 'execute',
                 generator: () => ({
-                    execute: (streams, args) => {
+                    execute: async(streams, args) => {
                         expect(args).toEqual(['/bin-file', 'world'])
-                        streams.stdout.write('Hello World')
+                        await streams.stdout.write('Hello World')
                         return 123
                     }
                 })
@@ -188,11 +190,11 @@ test('binary files can be executable', () => {
     }
     const file = new RootDirectory(dto).displayGetChild('bin-file')
     assert(file instanceof BinaryFile)
-    expect(file.read()).toEqual('\n** Binary file **\n')
-    expect(() => file.write('foo')).toThrow(new PermissionDenied())
+    expect(await file.read()).toEqual('\n** Binary file **\n')
+    expect(async() => file.write('foo')).toThrow(new PermissionDenied())
 
     const context = mockContext()
-    expect(file.execute(context, ['world'])).toEqual(123)
+    expect(await file.execute(context, ['world'])).toEqual(123)
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(context.stdout.write).toHaveBeenCalledTimes(1)
 })

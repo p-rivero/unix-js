@@ -25,7 +25,7 @@ export abstract class File extends FilesystemNode {
         return this.readable && this.permissions === 'execute'
     }
 
-    public read(): string {
+    public async read(): Promise<string> {
         if (!this.readable) {
             throw new PermissionDenied()
         }
@@ -33,23 +33,23 @@ export abstract class File extends FilesystemNode {
     }
 
 
-    public write(content: string): void {
+    public async write(content: string): Promise<void> {
         if (!this.writable) {
             throw new PermissionDenied()
         }
-        this.implementWrite(content)
+        await this.implementWrite(content)
     }
 
-    public execute(context: ExecutionContext, args: readonly string[]): number {
+    public async execute(context: ExecutionContext, args: readonly string[]): Promise<number> {
         if (!this.executable) {
             throw new PermissionDenied()
         }
         return this.implementExecute(context, [this.displayAbsolutePath, ...args])
     }
 
-    protected abstract implementRead(): string
+    protected abstract implementRead(): Promise<string>
 
-    protected abstract implementWrite(content: string): void
+    protected abstract implementWrite(content: string): Promise<void>
 
-    protected abstract implementExecute(context: ExecutionContext, args: string[]): number
+    protected abstract implementExecute(context: ExecutionContext, args: string[]): Promise<number>
 }

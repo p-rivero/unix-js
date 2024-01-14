@@ -3,9 +3,12 @@ import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { File, type FileDTO } from 'filesystem/files/file'
 
+type ReadFn = () => string | Promise<string>
+type WriteFn = (content: string) => void | Promise<void>
+
 export interface DeviceFileMethods {
-    read?: () => string
-    write?: (content: string) => void
+    read?: ReadFn
+    write?: WriteFn
 }
 
 export interface DeviceFileDTO extends FileDTO {
@@ -15,11 +18,11 @@ export interface DeviceFileDTO extends FileDTO {
 }
 
 export class DeviceFile extends File {
-    private readonly onRead: () => string
-    private readonly onWrite: (content: string) => void
+    private readonly onRead: ReadFn
+    private readonly onWrite: WriteFn
 
     public constructor(dto: DeviceFileDTO, parent: Directory) {
-        function permissionDenied(): string {
+        function permissionDenied(): never {
             throw new PermissionDenied()
         }
         super(dto, parent)
@@ -28,15 +31,15 @@ export class DeviceFile extends File {
         this.onWrite = methods.write ?? permissionDenied
     }
 
-    public override implementRead(): string {
+    public override async implementRead(): Promise<string> {
         return this.onRead()
     }
 
-    public override implementWrite(content: string): void {
-        this.onWrite(content)
+    public override async implementWrite(content: string): Promise<void> {
+        await this.onWrite(content)
     }
 
-    public override implementExecute(_context: ExecutionContext, _args: string[]): number {
+    public override implementExecute(_context: ExecutionContext, _args: string[]): never {
         throw new PermissionDenied()
     }
 }

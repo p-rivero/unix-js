@@ -7,30 +7,28 @@ import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 import { FilesystemPath } from 'filesystem/filesystem-path'
 
-export interface ExecutionContextDTO {
-    readonly filesystemTree: DirectoryDTO
-    readonly homePath: string
-}
 
 export class ExecutionContext {
     public readonly rootDirectory: RootDirectory
     public readonly homeDirectory: Directory
     private currentDirectory: Directory
-    private stdinFile?: File
-    private stdoutFile?: File
-    private stderrFile?: File
+    private readonly fileStreams: (File | undefined)[]
     
-    public constructor(dto: ExecutionContextDTO | ExecutionContext) {
-        if (dto instanceof ExecutionContext) {
-            this.stdinFile = dto.stdinFile
-            this.stdoutFile = dto.stdoutFile
-            this.stderrFile = dto.stderrFile
-            this.rootDirectory = dto.rootDirectory
-            this.homeDirectory = dto.homeDirectory
-            this.currentDirectory = dto.currentDirectory
+    public constructor(context: ExecutionContext)
+    public constructor(dto: DirectoryDTO, homePath: string)
+    public constructor(obj: DirectoryDTO | ExecutionContext, homePath?: string) {
+        if (obj instanceof ExecutionContext) {
+            this.fileStreams = obj.fileStreams
+            this.rootDirectory = obj.rootDirectory
+            this.homeDirectory = obj.homeDirectory
+            this.currentDirectory = obj.currentDirectory
         } else {
-            this.rootDirectory = new RootDirectory(dto.filesystemTree)
-            this.homeDirectory = ExecutionContext.getHomeDirectory(this.rootDirectory, dto.homePath)
+            if (homePath === undefined) {
+                throw new InvalidArgument('The home path must be specified')
+            }
+            this.fileStreams = []
+            this.rootDirectory = new RootDirectory(obj)
+            this.homeDirectory = ExecutionContext.getHomeDirectory(this.rootDirectory, homePath)
             this.currentDirectory = this.homeDirectory
         }
     }
@@ -39,34 +37,40 @@ export class ExecutionContext {
         return this.currentDirectory
     }
 
-    public get stdin(): File {
-        if (!this.stdinFile) {
-            throw new InternalError('Shell did not initialize stdin file')
+    public getFileStream(index: number): File {
+        const stream = index < this.fileStreams.length ? this.fileStreams[index] : undefined
+        if (stream === undefined) {
+            throw new InternalError(`Shell did not initialize file stream ${index}`)
         }
-        return this.stdinFile
+        return stream
+    }
+    public setFileStream(index: number, file: File): void {
+        if (index >= this.fileStreams.length) {
+            this.fileStreams.push(file)
+        } else {
+            this.fileStreams[index] = file
+        }
+    }
+
+    public get stdin(): File {
+        return this.getFileStream(0)
     }
     public set stdin(file: File) {
-        this.stdinFile = file
+        this.setFileStream(0, file)
     }
 
     public get stdout(): File {
-        if (!this.stdoutFile) {
-            throw new InternalError('Shell did not initialize stdout file')
-        }
-        return this.stdoutFile
+        return this.getFileStream(1)
     }
     public set stdout(file: File) {
-        this.stdoutFile = file
+        this.setFileStream(1, file)
     }
 
     public get stderr(): File {
-        if (!this.stderrFile) {
-            throw new InternalError('Shell did not initialize stderr file')
-        }
-        return this.stderrFile
+        return this.getFileStream(2)
     }
     public set stderr(file: File) {
-        this.stderrFile = file
+        this.setFileStream(2, file)
     }
     
     private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
@@ -124,7 +128,9 @@ export class ExecutionContext {
             type: 'device-file',
             permissions: 'read-write',
             generator: () => ({
-                write: content => buffer.push(content)
+                write: content => {
+                    buffer.push(content) 
+                }
             })
         }, this.currentDirectory)
         

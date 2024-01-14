@@ -4,7 +4,8 @@ import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { File, type FileDTO } from 'filesystem/files/file'
 
-export type Executable = (context: ExecutionContext, args: string[]) => number | undefined
+export type ExecutableRet = number | undefined | Promise<number | undefined>
+export type Executable = (context: ExecutionContext, args: string[]) => ExecutableRet
 
 export interface BinaryFileMethods {
     execute: Executable
@@ -24,11 +25,11 @@ export class BinaryFile extends File {
         this.content = dto.generator().execute
     }
 
-    public override implementRead(): string {
-        return BINARY_FILE_REPRESENTATION
+    public override async implementRead(): Promise<string> {
+        return Promise.resolve(BINARY_FILE_REPRESENTATION)
     }
 
-    public override implementWrite(_content: string): void {
+    public override implementWrite(_content: string): never {
         throw new PermissionDenied()
     }
 
@@ -40,7 +41,8 @@ export class BinaryFile extends File {
         this.content = executable
     }
 
-    public override implementExecute(context: ExecutionContext, args: string[]): number {
-        return this.content(context, args) ?? 0
+    public override async implementExecute(context: ExecutionContext, args: string[]): Promise<number> {
+        const ret = await this.content(context, args)
+        return ret ?? 0
     }
 }
