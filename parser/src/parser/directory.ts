@@ -9,6 +9,12 @@ import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-js-lib'
 
 export async function parseDirectory(parent: FileInfo | null, directoryPath: string): Promise<DirectoryDTO> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}
+    if (metadata.ignore === true) {
+        if (parent === null) {
+            throw new ParserError('Root directory cannot be ignored.')
+        }
+        throw new SkipMetadataFile()
+    }
     const directory = new FileInfo(parent, directoryPath, metadata.displayName)
     let { displayName } = metadata
     if (parent === null && metadata.displayName !== undefined) {

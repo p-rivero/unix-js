@@ -7,6 +7,7 @@ export const METADATA_EXTENSION = '.meta.json'
 export interface UnixJSMetadata {
     readonly displayName?: string
     readonly accessType?: AccessType
+    readonly ignore?: boolean
 }
 
 /** @see {isFileMetadata} ts-auto-guard:type-guard */

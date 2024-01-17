@@ -3,11 +3,13 @@ import { parse } from 'ts-command-line-args'
 export interface CliArguments {
     readonly inputDir: string
     readonly outFile: string
+    readonly templateFile: string
     readonly indent: number
     readonly help: boolean
 }
 
 export const OUT_FILE_STDOUT = '__stdout__'
+export const TEMPLATE_FILE_DEFAULT = '__default_template__'
 
 export function parseCliArgs(): CliArguments { // eslint-disable-line consistent-return -- False positive
     try {
@@ -24,6 +26,12 @@ export function parseCliArgs(): CliArguments { // eslint-disable-line consistent
                 alias: 'o',
                 description: 'The output file where the results will be written. Defaults to stdout.',
                 defaultValue: OUT_FILE_STDOUT
+            },
+            templateFile: {
+                type: String,
+                alias: 't',
+                description: 'Path of the template file to use. The template is a JS/TS file with the text "{RESULT}" as a placeholder. Defaults to a basic template.',
+                defaultValue: TEMPLATE_FILE_DEFAULT
             },
             indent: {
                 type: Number,

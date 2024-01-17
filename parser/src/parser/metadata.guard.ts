@@ -12,6 +12,9 @@ export function isFileMetadata(obj: unknown): obj is FileMetadata {
             typeof typedObj === "function") &&
         (typeof typedObj["displayName"] === "undefined" ||
             typeof typedObj["displayName"] === "string") &&
+        (typeof typedObj["ignore"] === "undefined" ||
+            typedObj["ignore"] === false ||
+            typedObj["ignore"] === true) &&
         (typeof typedObj["fileType"] === "undefined" ||
             typedObj["fileType"] === "text" ||
             typedObj["fileType"] === "binary" ||
@@ -27,6 +30,9 @@ export function isDirectoryMetadata(obj: unknown): obj is DirectoryMetadata {
             typeof typedObj === "function") &&
         (typeof typedObj["displayName"] === "undefined" ||
             typeof typedObj["displayName"] === "string") &&
+        (typeof typedObj["ignore"] === "undefined" ||
+            typedObj["ignore"] === false ||
+            typedObj["ignore"] === true) &&
         (typeof typedObj["isCommandDir"] === "undefined" ||
             typedObj["isCommandDir"] === false ||
             typedObj["isCommandDir"] === true) &&

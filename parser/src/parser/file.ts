@@ -29,6 +29,9 @@ export async function parseFile(parent: FileInfo, filePath: string): Promise<Fil
         throw new SkipMetadataFile()
     }
     const metadata = getMetadata(filePath, isFileMetadata) ?? {}
+    if (metadata.ignore === true) {
+        throw new SkipMetadataFile()
+    }
 
     const file = new FileInfo(parent, filePath, metadata.displayName)
     const commonAttributes = {
