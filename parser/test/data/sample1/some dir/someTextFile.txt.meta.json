@@ -1,0 +1,8 @@
+{
+    "displayName": "Some Text File",
+    "permissions": "read-only",
+    "isStdin": true,
+    "isStdout": true,
+    "isStderr": true,
+    "isStartupCommand": true
+}
