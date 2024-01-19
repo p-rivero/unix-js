@@ -10,11 +10,8 @@
     "type": "git",
     "url": "git+https://github.com/p-rivero/unix-js.git"
   },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+  "bin": {
+    "unix-js-parser": "./dist/index.js"
   },
   "dependencies": {
     "colors": "^1.4.0",
@@ -38,9 +35,8 @@
   "scripts": {
     "lint": "eslint src test",
     "prepublishOnly": "bun bundle",
-    "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build && bun bundle:types",
-    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
-    "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent",
+    "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build",
+    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify --no-bundle",
     "generate-type-guards": "ts-auto-guard --paths src/**/*.ts",
     "typecheck": "tsc --noEmit"
   }
