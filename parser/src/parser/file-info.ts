@@ -1,4 +1,6 @@
+import { FileFlags, type FlagName } from 'parser/file-flags'
 import { sep } from 'path'
+import { PATH_SEPARATOR } from 'unix-js-lib'
 
 export class FileInfo {
     public readonly realPath: string
@@ -9,11 +11,11 @@ export class FileInfo {
         this.realPath = realPath
         if (parent !== null) {
             const internalName = FileInfo.extractName(realPath)
-            this.internalPath = `${parent.internalPath}/${internalName}`
-            this.displayPath = `${parent.displayPath}/${displayName ?? internalName}`
+            this.internalPath = FileInfo.appendNameToPath(parent.internalPath, internalName)
+            this.displayPath = FileInfo.appendNameToPath(parent.displayPath, displayName ?? internalName)
         } else {
-            this.internalPath = ''
-            this.displayPath = ''
+            this.internalPath = PATH_SEPARATOR
+            this.displayPath = PATH_SEPARATOR
         }
     }
     
@@ -28,5 +30,18 @@ export class FileInfo {
     public static extractName(path: string): string {
         const parts = path.split(sep)
         return parts[parts.length - 1]
+    }
+
+    public setFlagIfTrue(flagName: FlagName, value: boolean | undefined): void {
+        if (value === true) {
+            FileFlags.get(flagName).addInternalPath(this.internalPath)
+        }
+    }
+
+    private static appendNameToPath(path: string, name: string): string {
+        if (path === PATH_SEPARATOR) {
+            return PATH_SEPARATOR + name
+        }
+        return path + PATH_SEPARATOR + name
     }
 }

@@ -15,7 +15,11 @@ export async function parseDirectory(parent: FileInfo | null, directoryPath: str
         }
         throw new SkipMetadataFile()
     }
+
     const directory = new FileInfo(parent, directoryPath, metadata.displayName)
+    directory.setFlagIfTrue('isHomeDir', metadata.isHomeDir)
+    directory.setFlagIfTrue('isCommandDir', metadata.isCommandDir)
+
     let { displayName } = metadata
     if (parent === null && metadata.displayName !== undefined) {
         printWarning(`Root directory (${directoryPath}) has a display name (${displayName}), which will be ignored.`)

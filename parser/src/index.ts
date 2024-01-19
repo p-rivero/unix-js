@@ -1,11 +1,11 @@
 import { OUT_FILE_STDOUT, TEMPLATE_FILE_DEFAULT, parseCliArgs } from 'cli-arguments'
 import fs from 'fs'
-import { parseDirectory } from 'parser/directory'
+import { parseProject } from 'parser/project'
 import { serializeWithTemplate } from 'serialize/serialize-with-template'
 
 const options = parseCliArgs()
 try {
-    const result = await parseDirectory(null, options.inputDir)
+    const result = await parseProject(options.inputDir)
     const template = options.templateFile === TEMPLATE_FILE_DEFAULT ? null : options.templateFile
     const resultString = serializeWithTemplate(result, template, options.indent)
     

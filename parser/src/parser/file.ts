@@ -34,13 +34,17 @@ export async function parseFile(parent: FileInfo, filePath: string): Promise<Fil
     }
 
     const file = new FileInfo(parent, filePath, metadata.displayName)
+    file.setFlagIfTrue('isStartupCommand', metadata.isStartupCommand)
+    file.setFlagIfTrue('isStdin', metadata.isStdin)
+    file.setFlagIfTrue('isStdout', metadata.isStdout)
+    file.setFlagIfTrue('isStderr', metadata.isStderr)
+
     const commonAttributes = {
         internalName: file.internalName,
         displayName: metadata.displayName,
         permissions: metadata.permissions,
         accessType: metadata.accessType
     }
-
     switch (metadata.fileType) {
         case 'binary': {
             return {

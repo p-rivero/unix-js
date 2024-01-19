@@ -14,6 +14,10 @@ export interface UnixJSMetadata {
 export interface FileMetadata extends UnixJSMetadata {
     readonly fileType?: 'text' | 'binary' | 'device'
     readonly permissions?: FilePermission
+    readonly isStartupCommand?: boolean
+    readonly isStdin?: boolean
+    readonly isStdout?: boolean
+    readonly isStderr?: boolean
 }
 
 /** @see {isDirectoryMetadata} ts-auto-guard:type-guard */
