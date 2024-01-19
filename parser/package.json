@@ -1,9 +1,9 @@
 {
-  "name": "unix-js-parser",
+  "name": "unix-parser",
   "module": "src/index.ts",
   "type": "module",
   "version": "0.0.1",
-  "description": "The unix-js parser reads a directory and returns a JS object to be used with unix-js",
+  "description": "The unix.js parser reads a directory and returns a JS object to be used with unix.js",
   "author": "p-rivero",
   "license": "MIT",
   "repository": {
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/p-rivero/unix-js.git"
   },
   "bin": {
-    "unix-js-parser": "./dist/index.js"
+    "unix-parser": "./dist/index.js"
   },
   "dependencies": {
     "colors": "^1.4.0",
@@ -27,7 +27,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-only-warn": "^1.1.0",
     "ts-auto-guard": "^4.1.4",
-    "unix-js-lib": "../lib"
+    "unix-lib": "../lib"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -35,8 +35,9 @@
   "scripts": {
     "lint": "eslint src test",
     "prepublishOnly": "bun bundle",
-    "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build",
-    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify --no-bundle",
+    "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build && bun bundle:copy-resources",
+    "bundle:build": "bun build src/index.ts --target=node --outdir dist -e typescript -e terser -e ts-command-line-args -e colors --minify",
+    "bundle:copy-resources": "cp src/serialize/default-template.js dist/default-template.js",
     "generate-type-guards": "ts-auto-guard --paths src/**/*.ts",
     "typecheck": "tsc --noEmit"
   }

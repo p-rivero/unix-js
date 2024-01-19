@@ -1,6 +1,6 @@
 import { parseDirectory } from 'parser/directory'
 import { FileFlags } from 'parser/file-flags'
-import type { ShellConfig, UnixJsConfig } from 'unix-js-lib'
+import type { ShellConfig, UnixConfig } from 'unix-lib'
 
 function getShellConfig(): ShellConfig {
     return {
@@ -26,7 +26,7 @@ function getShellConfig(): ShellConfig {
     }
 }
 
-export async function parseProject(rootDirectoryPath: string): Promise<UnixJsConfig> {
+export async function parseProject(rootDirectoryPath: string): Promise<UnixConfig> {
     const filesystemRoot = await parseDirectory(null, rootDirectoryPath)
     return {
         filesystemRoot,

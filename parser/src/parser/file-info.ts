@@ -1,6 +1,6 @@
 import { FileFlags, type FlagName } from 'parser/file-flags'
 import { sep } from 'path'
-import { PATH_SEPARATOR } from 'unix-js-lib'
+import { PATH_SEPARATOR } from 'unix-lib'
 
 export class FileInfo {
     public readonly realPath: string

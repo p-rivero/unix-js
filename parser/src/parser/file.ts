@@ -6,7 +6,7 @@ import { FileInfo } from 'parser/file-info'
 import { METADATA_EXTENSION, getMetadata } from 'parser/metadata'
 import { isFileMetadata } from 'parser/metadata.guard'
 
-import type { FilePermission, FilesystemNodeChildDTO } from 'unix-js-lib'
+import type { FilePermission, FilesystemNodeChildDTO } from 'unix-lib'
 
 function filterBinaryFilePermissions(permissions: FilePermission | undefined, filePath: string): 'read-only' | 'execute' | undefined {
     if (permissions === 'read-write') {

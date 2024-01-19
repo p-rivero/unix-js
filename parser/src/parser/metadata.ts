@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { printWarning } from 'parser'
-import type { AccessType, FilePermission } from 'unix-js-lib'
+import type { AccessType, FilePermission } from 'unix-lib'
 
 export const METADATA_EXTENSION = '.meta.json'
 
