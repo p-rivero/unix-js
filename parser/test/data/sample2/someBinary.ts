@@ -1,4 +1,4 @@
-import type { ExecutionContext } from 'unix-lib'
+import type { ExecutionContext } from 'unix-core'
 
 let A = 'aaa'
 export async function write(a: ExecutionContext, args: string[]) {

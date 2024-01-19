@@ -5,7 +5,7 @@ import { FileInfo } from 'parser/file-info'
 import { getMetadata } from 'parser/metadata'
 import { isDirectoryMetadata } from 'parser/metadata.guard'
 
-import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-lib'
+import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-core'
 
 export async function parseDirectory(parent: FileInfo | null, directoryPath: string): Promise<DirectoryDTO> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}

@@ -1,6 +1,6 @@
 import { parseDirectory } from 'parser/directory'
 import { FileFlags } from 'parser/file-flags'
-import type { ShellConfig, UnixConfig } from 'unix-lib'
+import type { ShellConfig, UnixConfig } from 'unix-core'
 
 function getShellConfig(): ShellConfig {
     return {

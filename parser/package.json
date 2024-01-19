@@ -11,7 +11,7 @@
     "url": "git+https://github.com/p-rivero/unix-js.git"
   },
   "bin": {
-    "unix-parser": "./dist/index.js"
+    "unix-parser": "dist/index.js"
   },
   "dependencies": {
     "colors": "^1.4.0",
@@ -27,7 +27,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-only-warn": "^1.1.0",
     "ts-auto-guard": "^4.1.4",
-    "unix-lib": "../lib"
+    "unix-core": "../core"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
