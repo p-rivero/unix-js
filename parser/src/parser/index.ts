@@ -1,4 +1,4 @@
-import colors from 'colors/safe'
+import colors from 'colors/safe.js'
 
 export class ParserWarning extends Error {}
 export class ParserError extends Error {}
