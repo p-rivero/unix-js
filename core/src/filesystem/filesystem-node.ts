@@ -1,26 +1,22 @@
-import assert from 'assert'
 import { InternalError, InvalidArgument } from 'errors'
 import { PATH_SEPARATOR } from 'filesystem/constants'
 import { Directory } from 'filesystem/directories/directory'
 
-export type AccessType = 'hidden' | 'locked' | 'readable'
+export type AccessType = 'hidden' | 'locked' | 'normal'
 
 export interface FilesystemNodeDTO {
-    readonly internalName: string
-    readonly displayName?: string
+    readonly name: string
     readonly accessType?: AccessType
 }
 
 export abstract class FilesystemNode {
-    public readonly internalName: string
-    public readonly displayName: string
+    public readonly name: string
     public readonly accessType: AccessType
     public readonly parent: Directory
 
     protected constructor(dto: FilesystemNodeDTO, parent?: Directory) {
-        this.internalName = dto.internalName
-        this.displayName = dto.displayName ?? dto.internalName
-        this.accessType = dto.accessType ?? 'readable'
+        this.name = dto.name
+        this.accessType = dto.accessType ?? 'normal'
         this.assertNameIsValid()
         if (parent) {
             this.parent = parent
@@ -31,41 +27,30 @@ export abstract class FilesystemNode {
         }
     }
 
-    public get visible(): boolean {
+    public get isVisible(): boolean {
         return this.accessType !== 'hidden'
     }
 
-    public get readable(): boolean {
-        return this.accessType === 'readable'
+    public get isReadable(): boolean {
+        return this.accessType === 'normal'
     }
 
-    public get displayAbsolutePath(): string {
-        return this.getAbsolutePath('displayName')
-    }
-
-    public get internalAbsolutePath(): string {
-        return this.getAbsolutePath('internalName')
-    }
-
-    protected getAbsolutePath(attribute: keyof FilesystemNode): string {
-        const name = this[attribute]
-        assert(typeof name === 'string')
-        return this.parent.getAbsolutePath(attribute) + PATH_SEPARATOR + name
+    public get absolutePath(): string {
+        const parentPath = this.parent.absolutePath
+        return parentPath === PATH_SEPARATOR 
+            ? PATH_SEPARATOR + this.name 
+            : parentPath + PATH_SEPARATOR + this.name
     }
 
     private assertNameIsValid(): void {
-        function check(name: string, nameType: string): void {
-            if (name.includes(PATH_SEPARATOR)) {
-                throw new InvalidArgument(`${nameType} '${name}' cannot contain '${PATH_SEPARATOR}'`)
-            }
-            if (name === '') {
-                throw new InvalidArgument(`${nameType} cannot be empty`)
-            }
-            if (name === '.' || name === '..') {
-                throw new InvalidArgument(`${nameType} cannot be "." or ".."`)
-            }
+        if (this.name.includes(PATH_SEPARATOR)) {
+            throw new InvalidArgument(`File name "${this.name}" cannot contain '${PATH_SEPARATOR}'`)
         }
-        check(this.internalName, 'Internal name')
-        check(this.displayName, 'Display name')
+        if (this.name === '') {
+            throw new InvalidArgument('File name cannot be empty')
+        }
+        if (this.name === '.' || this.name === '..') {
+            throw new InvalidArgument('File name cannot be "." or ".."')
+        }
     }
 }

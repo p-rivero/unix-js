@@ -5,7 +5,6 @@ import { BinaryFile, type BinaryFileDTO } from 'filesystem/files/binary-file'
 import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
 import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
-import { assertUnique } from 'utils/assert'
 
 type FilesystemNodeChildDTO = DirectoryDTO | TextFileDTO | BinaryFileDTO | DeviceFileDTO
 
@@ -33,50 +32,20 @@ export class Directory extends FilesystemNode {
                     throw new InternalError('Unknown node type')
             }
         })
-        assertUnique(this.children, 'internalName', (value) => {
-            throw new InvalidArgument(`Duplicate child internal name '${value}' in directory '${this.internalName}'`)
-        })
-        assertUnique(this.children, 'displayName', (value) => {
-            throw new InvalidArgument(`Duplicate child display name '${value}' in directory '${this.internalName}'`)
-        })
+        this.assertChildNamesAreUnique()
     }
 
-    public get internalChildrenNames(): string[] {
-        const names = this.children.map(child => child.internalName)
-        return Directory.sortAndAddExtraChildren(names)
-    }
-    
-    public get displayChildrenNames(): string[] {
-        if (!this.readable) {
+    public getChildrenNames(includeHidden = false): string[] {
+        if (!this.isReadable && !includeHidden) {
             throw new PermissionDenied()
         }
-        const names = this.children.filter(child => child.visible).map(child => child.displayName)
-        return Directory.sortAndAddExtraChildren(names)
+        const visibleChildren = includeHidden ? this.children : this.children.filter(child => child.isVisible)
+        const childrenNames = visibleChildren.map(child => child.name).concat([THIS_DIR, PARENT_DIR])
+        return childrenNames.toSorted((a, b) => a.localeCompare(b))
     }
 
-    private static sortAndAddExtraChildren(names: string[]): string[] {
-        const allChildren = names.concat([THIS_DIR, PARENT_DIR])
-        return allChildren.toSorted((a, b) => a.localeCompare(b))
-    }
-
-    public displayGetChild(displayName: string): FilesystemNode {
-        return this.getChild(displayName, 'displayName')
-    }
-
-    public internalGetChild(internalName: string): FilesystemNode {
-        return this.getChild(internalName, 'internalName')
-    }
-
-    public displayResolvePath(path: string[]): FilesystemNode {
-        return this.resolvePath(path, 'displayName')
-    }
-
-    public internalResolvePath(path: string[]): FilesystemNode {
-        return this.resolvePath(path, 'internalName')
-    }
-
-    private getChild(name: string, nameAttr: keyof(FilesystemNode)): FilesystemNode {
-        if (nameAttr === 'displayName' && !this.readable) {
+    public getChild(name: string, includeHidden = false): FilesystemNode {
+        if (!this.isReadable && !includeHidden) {
             throw new PermissionDenied()
         }
         switch (name) {
@@ -85,10 +54,11 @@ export class Directory extends FilesystemNode {
             case PARENT_DIR:
                 return this.parent
             default: {
-                const child = this.children.find(c => c[nameAttr] === name)
-                const childIsHidden = child?.accessType === 'hidden'
-                const shouldHideChild = childIsHidden && nameAttr === 'displayName'
-                if (child && !shouldHideChild) {
+                const child = this.children.find(c => c.name === name)
+                if (!child) {
+                    throw new NoSuchFileOrDirectory()
+                }
+                if (child.accessType !== 'hidden' || includeHidden) {
                     return child
                 }
                 throw new NoSuchFileOrDirectory()
@@ -96,18 +66,28 @@ export class Directory extends FilesystemNode {
         }
     }
 
-    private resolvePath(path: string[], nameAttr: keyof(FilesystemNode)): FilesystemNode {
+    public resolvePath(path: string[], allowHidden = false): FilesystemNode {
         if (path.length === 0) {
             return this
         }
         const [childName, ...rest] = path
-        const child = this.getChild(childName, nameAttr)
+        const child = this.getChild(childName, allowHidden)
         if (child instanceof Directory) {
-            return child.resolvePath(rest, nameAttr)
+            return child.resolvePath(rest, allowHidden)
         } 
         if (rest.length > 0) {
             throw new NotADirectory()
         }
         return child
+    }
+
+    private assertChildNamesAreUnique(): void {
+        const set = new Set()
+        for (const child of this.children) {
+            if (set.has(child.name)) {
+                throw new InvalidArgument(`Duplicate child name '${child.name}' in directory '${this.absolutePath}'`)
+            }
+            set.add(child.name)
+        }
     }
 }

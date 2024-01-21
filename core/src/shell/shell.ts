@@ -28,29 +28,33 @@ export class Shell {
 
     public constructor(context: ExecutionContext, config: ShellConfig) {
         this.context = context
-        this.commandDirectories = config.commandDirectories.map(path => this.internalGetDirectory(path))
+        this.commandDirectories = config.commandDirectories.map(path => this.getDirectory(path))
         for (const { index, internalPath } of config.standardStreams) {
-            const file = this.internalGetFile(internalPath)
+            const file = this.getFile(internalPath)
             this.context.setFileStream(index, file)
         }
         this.startupCommand = config.startupCommand
     }
 
     public async start(): Promise<number> {
-        const commandFile = this.displayFindCommand(this.startupCommand.command)
+        return this.execute(this.startupCommand.command, this.startupCommand.args, true)
+    }
+
+    public async execute(command: string, args: readonly string[], allowHidden = false): Promise<number> {
+        const commandFile = this.findCommand(command, allowHidden)
         try {
-            return await commandFile.execute(this.context, this.startupCommand.args)
+            return await commandFile.execute(this.context, args)
         } catch (error) {
             if (error instanceof UnixJsError) {
-                throw new ShellCommandFailure(this.startupCommand.command, error)
+                throw new ShellCommandFailure(command, error)
             }
             throw error
         }
     }
 
-    private internalGetDirectory(path: string): Directory {
+    private getDirectory(path: string): Directory {
         try {
-            const node = this.context.internalResolvePath(path)
+            const node = this.context.resolvePath(path, true)
             assert(node instanceof Directory)
             return node
         } catch (error) {
@@ -58,9 +62,9 @@ export class Shell {
         }
     }
 
-    private internalGetFile(path: string): File {
+    private getFile(path: string): File {
         try {
-            const node = this.context.internalResolvePath(path)
+            const node = this.context.resolvePath(path, true)
             assert(node instanceof File)
             return node
         } catch (error) {
@@ -68,23 +72,39 @@ export class Shell {
         }
     }
 
-    private displayFindCommand(commandName: string): File {
+    private findCommand(commandName: string, allowHidden: boolean): File {
+        const command = this.findCommandInCommandDirectories(commandName, allowHidden)
+        if (command !== null) {
+            return command
+        }
+        const commandOrError = this.findCommandInCurrentDirectory(commandName, allowHidden)
+        if (commandOrError instanceof File) {
+            return commandOrError
+        }
+        throw new ShellCommandFailure(commandName, commandOrError)
+    }
+
+    private findCommandInCommandDirectories(commandName: string, allowHidden: boolean): File|null {
         for (const directory of this.commandDirectories) {
             try {
-                const commandFile = directory.displayGetChild(commandName)
+                const commandFile = directory.getChild(commandName, allowHidden)
                 assert(commandFile instanceof File && commandFile.executable)
                 return commandFile
             } catch (error) {
                 // Continue searching
             }
         }
+        return null
+    }
+
+    private findCommandInCurrentDirectory(commandName: string, allowHidden: boolean): File|UnixJsError {
         try {
-            const commandFile = this.context.displayResolvePath(commandName)
+            const commandFile = this.context.resolvePath(commandName, allowHidden)
             assert(commandFile instanceof File)
             return commandFile
         } catch (error) {
             if (error instanceof UnixJsError) {
-                throw new ShellCommandFailure(commandName, error)
+                return error
             }
             throw error
         }

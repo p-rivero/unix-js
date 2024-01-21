@@ -40,8 +40,7 @@ export async function parseFile(parent: FileInfo, filePath: string): Promise<Fil
     file.setFlagIfTrue('isStderr', metadata.isStderr)
 
     const commonAttributes = {
-        internalName: file.internalName,
-        displayName: metadata.displayName,
+        name: file.name,
         permissions: metadata.permissions,
         accessType: metadata.accessType
     }
@@ -62,13 +61,16 @@ export async function parseFile(parent: FileInfo, filePath: string): Promise<Fil
                 generator: await parseDeviceFile(file)
             }
         }
-        default: {
+        case 'text': {
             const fileContents = fs.readFileSync(filePath, 'utf-8')
             return {
                 ...commonAttributes,
                 type: 'text-file',
                 content: fileContents
             }
+        }
+        default: {
+            throw new Error(`Unknown file type '${metadata.fileType}'`)
         }
     }
 }

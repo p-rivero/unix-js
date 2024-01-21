@@ -2,7 +2,7 @@
   "name": "unix-core",
   "module": "src/index.ts",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Drop your users into an enhanced replica of your own filesystem",
   "author": "p-rivero",
   "license": "MIT",

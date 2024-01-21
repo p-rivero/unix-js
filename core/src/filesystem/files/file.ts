@@ -18,15 +18,15 @@ export abstract class File extends FilesystemNode {
     }
 
     public get writable(): boolean {
-        return this.readable && this.permissions === 'read-write'
+        return this.isReadable && this.permissions === 'read-write'
     }
 
     public get executable(): boolean {
-        return this.readable && this.permissions === 'execute'
+        return this.isReadable && this.permissions === 'execute'
     }
 
     public async read(): Promise<string> {
-        if (!this.readable) {
+        if (!this.isReadable) {
             throw new PermissionDenied()
         }
         return this.implementRead()
@@ -44,7 +44,7 @@ export abstract class File extends FilesystemNode {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementExecute(context, [this.displayAbsolutePath, ...args])
+        return this.implementExecute(context, [this.absolutePath, ...args])
     }
 
     protected abstract implementRead(): Promise<string>

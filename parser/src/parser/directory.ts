@@ -20,15 +20,13 @@ export async function parseDirectory(parent: FileInfo | null, directoryPath: str
     directory.setFlagIfTrue('isHomeDir', metadata.isHomeDir)
     directory.setFlagIfTrue('isCommandDir', metadata.isCommandDir)
 
-    let { displayName } = metadata
     if (parent === null && metadata.displayName !== undefined) {
-        printWarning(`Root directory (${directoryPath}) has a display name (${displayName}), which will be ignored.`)
-        displayName = undefined
+        printWarning(`Root directory (${directoryPath}) has a display name (${metadata.displayName}), which will be ignored.`)
     }
+
     return {
         type: 'directory',
-        internalName: directory.internalName,
-        displayName,
+        name: parent === null ? '/' : directory.name,
         accessType: metadata.accessType,
         children: await parseChildren(directory) // eslint-disable-line @typescript-eslint/no-use-before-define
     }

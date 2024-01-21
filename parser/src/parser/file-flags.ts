@@ -20,18 +20,18 @@ export class FileFlags {
         this.name = name
     }
 
-    public addInternalPath(internalPath: string): void {
+    public addPath(internalPath: string): void {
         this.internalPaths.push(internalPath)
     }
 
-    public getInternalPaths(type: 'file' | 'directory'): string[] {
+    public getPaths(type: 'file' | 'directory'): string[] {
         if (this.internalPaths.length === 0) {
             throw new Error(`Expected at least 1 ${type} with ${this.name}=true, but found none`)
         }
         return this.internalPaths
     }
 
-    public getSingleInternalPath(type: 'file' | 'directory'): string {
+    public getSinglePath(type: 'file' | 'directory'): string {
         if (this.internalPaths.length !== 1) {
             throw new Error(`Expected exactly 1 ${type} with ${this.name}=true, but found ${this.internalPaths.length}`)
         }

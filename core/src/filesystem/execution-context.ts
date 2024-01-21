@@ -79,7 +79,7 @@ export class ExecutionContext {
             throw new InvalidArgument('The home path must be absolute')
         }
         try {
-            const home = root.internalResolvePath(path.parts)
+            const home = root.resolvePath(path.parts)
             assert(home instanceof Directory)
             return home
         } catch (error) {
@@ -87,31 +87,21 @@ export class ExecutionContext {
         }
     }
 
-    public displayResolvePath(pathStr: string): FilesystemNode {
+    public resolvePath(pathStr: string, allowHidden = false): FilesystemNode {
         const path = new FilesystemPath(pathStr)
-        return this.baseDirectory(path).displayResolvePath(path.parts)
+        return this.baseDirectory(path).resolvePath(path.parts, allowHidden)
     }
 
-    public internalResolvePath(pathStr: string): FilesystemNode {
+    public changeDirectory(pathStr: string, allowHidden = false): void {
         const path = new FilesystemPath(pathStr)
-        return this.baseDirectory(path).internalResolvePath(path.parts)
-    }
-
-    public displayChangeDirectory(pathStr: string): void {
-        const path = new FilesystemPath(pathStr)
-        this.currentDirectory = this.baseDirectory(path).displayResolvePath(path.parts) as Directory
-    }
-
-    public internalChangeDirectory(pathStr: string): void {
-        const path = new FilesystemPath(pathStr)
-        this.currentDirectory = this.baseDirectory(path).internalResolvePath(path.parts) as Directory
+        this.currentDirectory = this.baseDirectory(path).resolvePath(path.parts, allowHidden) as Directory
     }
 
     public createPipe(): [File, File] {
         const buffer: string[] = []
     
         const pipeOut = new DeviceFile({
-            internalName: 'pipeIn',
+            name: 'pipeIn',
             type: 'device-file',
             permissions: 'read-only',
             generator: () => ({
@@ -124,7 +114,7 @@ export class ExecutionContext {
         }, this.currentDirectory)
     
         const pipeIn = new DeviceFile({
-            internalName: 'pipeOut',
+            name: 'pipeOut',
             type: 'device-file',
             permissions: 'read-write',
             generator: () => ({
