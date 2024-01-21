@@ -37,10 +37,10 @@ function wrapSourceCode(file: FileInfo): string {
         target: ts.ScriptTarget.ESNext
     })
     return `
-        const __filename = "${file.name}";
+        const id = "${file.displayPath}";
         const m = {
-            id: __filename,
-            filename: __filename,
+            id,
+            filename: id,
             exports: {},
         };
         ((module, exports) => {

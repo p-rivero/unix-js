@@ -35,7 +35,7 @@ export function parseCliArgs(): CliArguments { // eslint-disable-line consistent
             },
             indent: {
                 type: Number,
-                description: 'The number of spaces used to indent the output file. Defaults to 4.',
+                description: 'The number of spaces used to indent the output file. Use 0 to minify the output. Defaults to 4.',
                 defaultValue: 4
             },
             help: {
