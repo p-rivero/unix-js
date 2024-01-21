@@ -10,5 +10,5 @@ function defaultTemplatePath(): string {
 export function serializeWithTemplate(obj: unknown, templatePath: string | null, indent: number): string {
     const template = fs.readFileSync(templatePath ?? defaultTemplatePath(), 'utf8')
     const serialized = serializeObject(obj, indent)
-    return template.replace('{RESULT}', serialized)
+    return template.replace('[RESULT]', serialized)
 }

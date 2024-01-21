@@ -30,7 +30,7 @@ export function parseCliArgs(): CliArguments { // eslint-disable-line consistent
             templateFile: {
                 type: String,
                 alias: 't',
-                description: 'Path of the template file to use. The template is a JS/TS file with the text "{RESULT}" as a placeholder. Defaults to a basic template.',
+                description: 'Path of the template file to use. The template is a JS/TS file with the text "[RESULT]" as a placeholder. Defaults to a basic template.',
                 defaultValue: TEMPLATE_FILE_DEFAULT
             },
             indent: {

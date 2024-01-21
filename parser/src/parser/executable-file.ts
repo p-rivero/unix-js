@@ -32,6 +32,7 @@ function wrapSourceCode(file: FileInfo): string {
         allowJs: true,
         checkJs: true,
         noImplicitUseStrict: true,
+        skipLibCheck: true,
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ESNext
     })
