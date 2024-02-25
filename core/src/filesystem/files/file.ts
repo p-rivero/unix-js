@@ -13,6 +13,34 @@ export type ImplementReadSignature = (range?: [number, number]) => Promise<strin
 export type ImplementWriteSignature = (content: string, position?: number) => Promise<void>
 export type ImplementExecuteSignature = (context: ExecutionContext, args: string[]) => Promise<number>
 
+export class FileHandle {
+    private readonly implementRead: ImplementReadSignature
+    private readonly implementWrite: ImplementWriteSignature
+    private cursor = 0
+
+    public constructor(implementRead: ImplementReadSignature, implementWrite: ImplementWriteSignature) {
+        this.implementRead = implementRead
+        this.implementWrite = implementWrite
+    }
+
+    public get position(): number {
+        return this.cursor
+    }
+
+    public async read(maxNumChars: number): Promise<string> {
+        const start = this.cursor
+        const end = start + maxNumChars
+        const content = await this.implementRead([start, end])
+        this.cursor = start + content.length
+        return content
+    }
+
+    public async write(content: string): Promise<void> {
+        await this.implementWrite(content, this.cursor)
+        this.cursor += content.length
+    }
+}
+
 export abstract class File extends FilesystemNode {
     private readonly permissions: FilePermission
 
@@ -64,32 +92,4 @@ export abstract class File extends FilesystemNode {
     protected abstract implementWrite: ImplementWriteSignature
 
     protected abstract implementExecute: ImplementExecuteSignature
-}
-
-export class FileHandle {
-    private readonly implementRead: ImplementReadSignature
-    private readonly implementWrite: ImplementWriteSignature
-    private cursor = 0
-
-    public constructor(implementRead: ImplementReadSignature, implementWrite: ImplementWriteSignature) {
-        this.implementRead = implementRead
-        this.implementWrite = implementWrite
-    }
-
-    public get position(): number {
-        return this.cursor
-    }
-
-    public async read(maxNumChars: number): Promise<string> {
-        const start = this.cursor
-        const end = start + maxNumChars
-        const content = await this.implementRead([start, end])
-        this.cursor = start + content.length
-        return content
-    }
-
-    public async write(content: string): Promise<void> {
-        await this.implementWrite(content, this.cursor)
-        this.cursor += content.length
-    }
 }

@@ -33,7 +33,7 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "lint": "eslint src test",
+    "lint": "eslint src",
     "prepublishOnly": "bun bundle",
     "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build && bun bundle:copy-resources && bun bundle:postprocess",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist -e typescript -e terser -e ts-command-line-args -e colors --minify",

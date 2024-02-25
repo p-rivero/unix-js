@@ -84,7 +84,7 @@ export class Shell {
         throw new ShellCommandFailure(commandName, commandOrError)
     }
 
-    private findCommandInCommandDirectories(commandName: string, allowHidden: boolean): File|null {
+    private findCommandInCommandDirectories(commandName: string, allowHidden: boolean): File | null {
         for (const directory of this.commandDirectories) {
             try {
                 const commandFile = directory.getChild(commandName, allowHidden)
@@ -97,7 +97,7 @@ export class Shell {
         return null
     }
 
-    private findCommandInCurrentDirectory(commandName: string, allowHidden: boolean): File|UnixJsError {
+    private findCommandInCurrentDirectory(commandName: string, allowHidden: boolean): File | UnixJsError {
         try {
             const commandFile = this.context.resolvePath(commandName, allowHidden)
             assert(commandFile instanceof File)

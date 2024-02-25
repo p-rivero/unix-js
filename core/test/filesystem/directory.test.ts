@@ -30,7 +30,7 @@ test('directory can list files', () => {
 })
 
 test('names of directory children must be unique', () => {
-    let dto: DirectoryDTO = {
+    const dto: DirectoryDTO = {
         name: 'test',
         type: 'directory',
         children: [

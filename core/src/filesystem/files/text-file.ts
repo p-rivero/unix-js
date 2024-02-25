@@ -1,5 +1,5 @@
 import type { Directory } from 'filesystem/directories/directory'
-import { File, ImplementExecuteSignature, ImplementReadSignature, ImplementWriteSignature, type FileDTO } from 'filesystem/files/file'
+import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
 
 export interface TextFileDTO extends FileDTO {
     readonly type: 'text-file'
@@ -16,13 +16,13 @@ export class TextFile extends File {
 
     public override implementRead: ImplementReadSignature = async range => {
         if (range) {
-            return this.content.slice(range[0], range[1])
+            return Promise.resolve(this.content.slice(range[0], range[1]))
         }
-        return this.content
+        return Promise.resolve(this.content)
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override implementWrite: ImplementWriteSignature = async (content, position) => {
+    public override implementWrite: ImplementWriteSignature = async(content, position) => {
         const APPEND_TO_END_POSITION = this.content.length
         const contentStart = position ?? APPEND_TO_END_POSITION
         const contentEnd = contentStart + content.length
