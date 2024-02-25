@@ -10,15 +10,17 @@ export interface FileDTO extends FilesystemNodeDTO {
 }
 
 export type ImplementReadSignature = (range?: [number, number]) => Promise<string>
-export type ImplementWriteSignature = (content: string, position?: number) => Promise<void>
+export type ImplementWriteSignature = (content: string, position: number | undefined, truncate: boolean) => Promise<void>
 export type ImplementExecuteSignature = (context: ExecutionContext, args: string[]) => Promise<number>
 
 export class FileHandle {
+    private readonly file: File
     private readonly implementRead: ImplementReadSignature
     private readonly implementWrite: ImplementWriteSignature
     private cursor = 0
 
-    public constructor(implementRead: ImplementReadSignature, implementWrite: ImplementWriteSignature) {
+    public constructor(file: File, implementRead: ImplementReadSignature, implementWrite: ImplementWriteSignature) {
+        this.file = file
         this.implementRead = implementRead
         this.implementWrite = implementWrite
     }
@@ -28,6 +30,9 @@ export class FileHandle {
     }
 
     public async read(maxNumChars: number): Promise<string> {
+        if (!this.file.isReadable) {
+            throw new PermissionDenied()
+        }
         const start = this.cursor
         const end = start + maxNumChars
         const content = await this.implementRead([start, end])
@@ -35,9 +40,16 @@ export class FileHandle {
         return content
     }
 
-    public async write(content: string): Promise<void> {
-        await this.implementWrite(content, this.cursor)
+    public async write(content: string, truncateAfter = false): Promise<void> {
+        if (!this.file.writable) {
+            throw new PermissionDenied()
+        }
+        await this.implementWrite(content, this.cursor, truncateAfter)
         this.cursor += content.length
+    }
+
+    public seek(position: number): void {
+        this.cursor = Math.max(0, position)
     }
 }
 
@@ -58,11 +70,7 @@ export abstract class File extends FilesystemNode {
     }
 
     public open(): FileHandle {
-        return new FileHandle(this.implementRead, this.implementWrite)
-    }
-
-    public get isReadable(): boolean {
-        return this.permissions !== 'read-only'
+        return new FileHandle(this, this.implementRead, this.implementWrite)
     }
 
     public async read(): Promise<string> {
@@ -72,12 +80,16 @@ export abstract class File extends FilesystemNode {
         return this.implementRead()
     }
 
-    public async write(content: string, append = true): Promise<void> {
+    public async write(content: string, append = false): Promise<void> {
         if (!this.writable) {
             throw new PermissionDenied()
         }
         const overwriteFrom = append ? undefined : 0
-        await this.implementWrite(content, overwriteFrom)
+        await this.implementWrite(content, overwriteFrom, true)
+    }
+
+    public async append(content: string): Promise<void> {
+        await this.write(content, true)
     }
 
     public async execute(context: ExecutionContext, args: readonly string[]): Promise<number> {

@@ -116,6 +116,6 @@ test('can create pipes', async() => {
     expect(await pipeOut.read()).toBe('barbaz')
     expect(await pipeOut.read()).toBe('')
 
-    expect(async() => pipeOut.write('foo')).toThrow(new PermissionDenied())
-    expect(async() => pipeIn.read()).toThrow(new PermissionDenied())
+    expect(pipeOut.write('foo')).rejects.toThrow(new PermissionDenied())
+    expect(pipeIn.read()).rejects.toThrow(new PermissionDenied())
 })

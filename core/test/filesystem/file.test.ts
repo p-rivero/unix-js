@@ -66,8 +66,8 @@ test('user cannot access locked file', () => {
     expect(lockedFile.absolutePath).toEqual('/locked-file.txt')
     expect(lockedFile.isReadable).toEqual(false)
     expect(lockedFile.writable).toEqual(false)
-    expect(async() => lockedFile.read()).toThrow(new PermissionDenied())
-    expect(async() => lockedFile.write('foo')).toThrow(new PermissionDenied())
+    expect(lockedFile.read()).rejects.toThrow(new PermissionDenied())
+    expect(lockedFile.write('foo')).rejects.toThrow(new PermissionDenied())
 })
 
 test('user cannot access hidden file', () => {
@@ -114,8 +114,8 @@ test('user cannot access locked binary file', () => {
     expect(lockedFile.absolutePath).toEqual('/locked-file.txt')
     expect(lockedFile.isReadable).toEqual(false)
     expect(lockedFile.writable).toEqual(false)
-    expect(async() => lockedFile.read()).toThrow(new PermissionDenied())
-    expect(async() => lockedFile.write('foo')).toThrow(new PermissionDenied())
+    expect(lockedFile.read()).rejects.toThrow(new PermissionDenied())
+    expect(lockedFile.write('foo')).rejects.toThrow(new PermissionDenied())
 })
 
 test('user cannot access hidden device file', () => {
@@ -162,7 +162,7 @@ test('supports binary files', async() => {
     expect(file.isReadable).toEqual(true)
     expect(file.writable).toEqual(true)
     expect(await file.read()).toEqual('\n** Binary file **\n')
-    expect(async() => file.write('foo')).toThrow(new PermissionDenied())
+    expect(file.write('foo')).rejects.toThrow(new PermissionDenied())
 })
 
 test('binary files can be executable', async() => {
@@ -187,7 +187,7 @@ test('binary files can be executable', async() => {
     const file = new RootDirectory(dto).getChild('bin-file')
     assert(file instanceof BinaryFile)
     expect(await file.read()).toEqual('\n** Binary file **\n')
-    expect(async() => file.write('foo')).toThrow(new PermissionDenied())
+    expect(file.write('foo')).rejects.toThrow(new PermissionDenied())
 
     const context = mockContext()
     expect(await file.execute(context, ['a', 'b'])).toEqual(123)

@@ -22,11 +22,15 @@ export class TextFile extends File {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public override implementWrite: ImplementWriteSignature = async(content, position) => {
+    public override implementWrite: ImplementWriteSignature = async(content, position, truncate) => {
         const APPEND_TO_END_POSITION = this.content.length
         const contentStart = position ?? APPEND_TO_END_POSITION
         const contentEnd = contentStart + content.length
-        this.content = this.content.slice(0, contentStart) + content + this.content.slice(contentEnd)
+        if (truncate) {
+            this.content = this.content.slice(0, contentStart) + content
+        } else {
+            this.content = this.content.slice(0, contentStart) + content + this.content.slice(contentEnd)
+        }
     }
 
     public override implementExecute: ImplementExecuteSignature = async context => {
