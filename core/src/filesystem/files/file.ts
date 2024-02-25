@@ -9,6 +9,10 @@ export interface FileDTO extends FilesystemNodeDTO {
     readonly permissions?: FilePermission
 }
 
+export type ImplementReadSignature = (range?: [number, number]) => Promise<string>
+export type ImplementWriteSignature = (content: string, position?: number) => Promise<void>
+export type ImplementExecuteSignature = (context: ExecutionContext, args: string[]) => Promise<number>
+
 export abstract class File extends FilesystemNode {
     private readonly permissions: FilePermission
 
@@ -25,6 +29,14 @@ export abstract class File extends FilesystemNode {
         return this.isReadable && this.permissions === 'execute'
     }
 
+    public open(): FileHandle {
+        return new FileHandle(this.implementRead, this.implementWrite)
+    }
+
+    public get isReadable(): boolean {
+        return this.permissions !== 'read-only'
+    }
+
     public async read(): Promise<string> {
         if (!this.isReadable) {
             throw new PermissionDenied()
@@ -32,12 +44,12 @@ export abstract class File extends FilesystemNode {
         return this.implementRead()
     }
 
-
-    public async write(content: string): Promise<void> {
+    public async write(content: string, append = true): Promise<void> {
         if (!this.writable) {
             throw new PermissionDenied()
         }
-        await this.implementWrite(content)
+        const overwriteFrom = append ? undefined : 0
+        await this.implementWrite(content, overwriteFrom)
     }
 
     public async execute(context: ExecutionContext, args: readonly string[]): Promise<number> {
@@ -47,9 +59,37 @@ export abstract class File extends FilesystemNode {
         return this.implementExecute(context, [this.absolutePath, ...args])
     }
 
-    protected abstract implementRead(): Promise<string>
+    protected abstract implementRead: ImplementReadSignature
 
-    protected abstract implementWrite(content: string): Promise<void>
+    protected abstract implementWrite: ImplementWriteSignature
 
-    protected abstract implementExecute(context: ExecutionContext, args: string[]): Promise<number>
+    protected abstract implementExecute: ImplementExecuteSignature
+}
+
+export class FileHandle {
+    private readonly implementRead: ImplementReadSignature
+    private readonly implementWrite: ImplementWriteSignature
+    private cursor = 0
+
+    public constructor(implementRead: ImplementReadSignature, implementWrite: ImplementWriteSignature) {
+        this.implementRead = implementRead
+        this.implementWrite = implementWrite
+    }
+
+    public get position(): number {
+        return this.cursor
+    }
+
+    public async read(maxNumChars: number): Promise<string> {
+        const start = this.cursor
+        const end = start + maxNumChars
+        const content = await this.implementRead([start, end])
+        this.cursor = start + content.length
+        return content
+    }
+
+    public async write(content: string): Promise<void> {
+        await this.implementWrite(content, this.cursor)
+        this.cursor += content.length
+    }
 }

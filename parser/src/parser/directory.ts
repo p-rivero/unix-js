@@ -26,7 +26,7 @@ export async function parseDirectory(parent: FileInfo | null, directoryPath: str
 
     return {
         type: 'directory',
-        name: parent === null ? '/' : directory.name,
+        name: parent === null ? 'ROOT' : directory.name,
         accessType: metadata.accessType,
         children: await parseChildren(directory) // eslint-disable-line @typescript-eslint/no-use-before-define
     }

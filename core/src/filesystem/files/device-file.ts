@@ -1,7 +1,6 @@
 import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
-import type { ExecutionContext } from 'filesystem/execution-context'
-import { File, type FileDTO } from 'filesystem/files/file'
+import { File, ImplementExecuteSignature, ImplementReadSignature, ImplementWriteSignature, type FileDTO } from 'filesystem/files/file'
 
 type ReadFn = () => string | Promise<string>
 type WriteFn = (content: string) => void | Promise<void>
@@ -31,15 +30,11 @@ export class DeviceFile extends File {
         this.onWrite = methods.write ?? permissionDenied
     }
 
-    public override async implementRead(): Promise<string> {
-        return this.onRead()
-    }
+    public override implementRead: ImplementReadSignature = async () => this.onRead()
 
-    public override async implementWrite(content: string): Promise<void> {
-        await this.onWrite(content)
-    }
+    public override implementWrite: ImplementWriteSignature = async content => this.onWrite(content)
 
-    public override implementExecute(_context: ExecutionContext, _args: string[]): never {
+    public override implementExecute: ImplementExecuteSignature = () => {
         throw new PermissionDenied()
     }
 }

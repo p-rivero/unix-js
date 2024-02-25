@@ -2,7 +2,7 @@ import { PermissionDenied } from 'errors'
 import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
 import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
-import { File, type FileDTO } from 'filesystem/files/file'
+import { File, ImplementExecuteSignature, ImplementReadSignature, ImplementWriteSignature, type FileDTO } from 'filesystem/files/file'
 
 export type ExecutableRet = number | undefined | Promise<number | undefined>
 export type Executable = (context: ExecutionContext, args: string[]) => ExecutableRet
@@ -25,11 +25,9 @@ export class BinaryFile extends File {
         this.content = dto.generator().execute
     }
 
-    public override async implementRead(): Promise<string> {
-        return Promise.resolve(BINARY_FILE_REPRESENTATION)
-    }
+    public override implementRead: ImplementReadSignature = async () => BINARY_FILE_REPRESENTATION
 
-    public override implementWrite(_content: string): never {
+    public override implementWrite: ImplementWriteSignature = () => {
         throw new PermissionDenied()
     }
 
@@ -41,7 +39,7 @@ export class BinaryFile extends File {
         this.content = executable
     }
 
-    public override async implementExecute(context: ExecutionContext, args: string[]): Promise<number> {
+    public override implementExecute: ImplementExecuteSignature = async (context, args) => {
         const ret = await this.content(context, args)
         return ret ?? 0
     }
