@@ -2,7 +2,7 @@
   "name": "unix-parser",
   "module": "src/index.ts",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "The unix.js parser reads a directory and returns a JS object to be used with unix.js",
   "author": "p-rivero",
   "license": "MIT",

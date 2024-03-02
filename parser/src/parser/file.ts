@@ -61,16 +61,13 @@ export async function parseFile(parent: FileInfo, filePath: string): Promise<Fil
                 generator: await parseDeviceFile(file)
             }
         }
-        case 'text': {
+        default: {
             const fileContents = fs.readFileSync(filePath, 'utf-8')
             return {
                 ...commonAttributes,
                 type: 'text-file',
                 content: fileContents
             }
-        }
-        default: {
-            throw new Error(`Unknown file type '${metadata.fileType}'`)
         }
     }
 }
