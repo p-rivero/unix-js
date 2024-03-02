@@ -30,6 +30,7 @@ module.exports = {
     'no-ternary': 'off',
     'no-undefined': 'off',
     'max-statements': 'off',
+    'no-plusplus': 'off',
     '@typescript-eslint/consistent-type-imports': [ 'error', { 'fixStyle': 'inline-type-imports' } ],
     '@typescript-eslint/object-curly-spacing': [ 'error', 'always' ],
     '@typescript-eslint/lines-between-class-members': 'off',

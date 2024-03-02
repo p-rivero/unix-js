@@ -6,6 +6,7 @@ import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { RootDirectory } from 'filesystem/directories/root-directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile } from 'filesystem/files/binary-file'
+import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
 
@@ -193,4 +194,38 @@ test('binary files can be executable', async() => {
     expect(await file.execute(context, ['a', 'b'])).toEqual(123)
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(context.stdout.write).toHaveBeenCalledTimes(1)
+})
+
+test('readline from text file', async() => {
+    const dto: TextFileDTO = {
+        name: 'file.txt',
+        type: 'text-file',
+        content: 'line1\nline2\nline3'
+    }
+    const file = new TextFile(dto, parent)
+    const handle = file.open()
+    expect(await handle.readLine()).toEqual('line1')
+    expect(await handle.readLine()).toEqual('line2')
+    expect(await handle.readLine()).toEqual('line3')
+    expect(await handle.readLine()).toEqual('')
+})
+
+test('readline from device file', async() => {
+    const dto: DeviceFileDTO = {
+        name: 'device-file',
+        type: 'device-file',
+        generator: () => {
+            let readCount = 0
+            const returnValues = ['l', 'i', 'n', 'e', '1', '\n', 'line', '2', '\n', 'l', 'i', 'n', 'e', '3']
+            return {
+                read: () => returnValues[readCount++] ?? ''
+            }
+        }
+    }
+    const file = new DeviceFile(dto, parent)
+    const handle = file.open()
+    expect(await handle.readLine()).toEqual('line1')
+    expect(await handle.readLine()).toEqual('line2')
+    expect(await handle.readLine()).toEqual('line3')
+    expect(await handle.readLine()).toEqual('')
 })

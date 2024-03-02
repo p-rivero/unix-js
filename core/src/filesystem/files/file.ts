@@ -40,6 +40,17 @@ export class FileHandle {
         return content
     }
 
+    public async readLine(): Promise<string> {
+        let content = ''
+        let char = await this.read(1)
+        while (char !== '\n' && char !== '') {
+            content += char
+            // eslint-disable-next-line no-await-in-loop -- cannot be avoided
+            char = await this.read(1)
+        }
+        return content
+    }
+
     public async write(content: string, truncateAfter = false): Promise<void> {
         if (!this.file.writable) {
             throw new PermissionDenied()
