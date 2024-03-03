@@ -2,7 +2,7 @@
   "name": "unix-core",
   "module": "src/index.ts",
   "type": "module",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Drop your users into an enhanced replica of your own filesystem",
   "author": "p-rivero",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "lint": "eslint src test",
     "prepublishOnly": "bun bundle",
     "bundle": "bun typecheck && bun bundle:build && bun bundle:types",
-    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify",
+    "bundle:build": "bun build src/index.ts --target=node --outdir dist --minify --sourcemap=external",
     "bundle:types": "dts-bundle-generator src/index.ts -o dist/index.d.ts --silent",
     "typecheck": "tsc --noEmit"
   }

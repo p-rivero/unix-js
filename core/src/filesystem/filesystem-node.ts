@@ -1,6 +1,8 @@
 import { InternalError, InvalidArgument } from 'errors'
+import { IsADirectory, NotADirectory } from 'errors/filesystem'
 import { PATH_SEPARATOR } from 'filesystem/constants'
 import { Directory } from 'filesystem/directories/directory'
+import { File } from 'filesystem/files/file'
 
 export type AccessType = 'hidden' | 'locked' | 'normal'
 
@@ -40,6 +42,20 @@ export abstract class FilesystemNode {
         return parentPath === PATH_SEPARATOR 
             ? PATH_SEPARATOR + this.name 
             : parentPath + PATH_SEPARATOR + this.name
+    }
+
+    public asFile(): File {
+        if (this instanceof File) {
+            return this
+        }
+        throw new IsADirectory()
+    }
+
+    public asDirectory(): Directory {
+        if (this instanceof Directory) {
+            return this
+        }
+        throw new NotADirectory()
     }
 
     private assertNameIsValid(): void {
