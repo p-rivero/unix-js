@@ -1,2 +1,2 @@
 /* eslint-disable */
-export default [RESULT]
+module.exports = [RESULT]

@@ -7,7 +7,7 @@ function replaceSuffix(str: string, suffix: string, newSuffix: string): string {
 }
 
 function normalizeAnonymousFunction(code: string): string {
-    const str = replacePrefix(code, 'function anonymous(\n) {\n', '()=>{')
+    const str = replacePrefix(code, 'function anonymous(require=()=>{}\n) {\n', '()=>{')
     return replaceSuffix(str, '\n}', '}')
 }
 

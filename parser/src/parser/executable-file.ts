@@ -57,7 +57,7 @@ async function minifyAndCheck(source: string): Promise<unknown> {
         throw new ParserError('Error minifying code')
     }
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func -- cannot be avoided
-    return new Function(minifiedCode)
+    return new Function('require=()=>{}', minifiedCode)
 }
 
 function getCodeLine(code: string, line: number): string {
