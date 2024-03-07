@@ -1,10 +1,12 @@
 export class Signal {
     public readonly name: string
     public readonly number: number
+    public readonly terminateByDefault: boolean
 
-    public constructor(name: string, number: number) {
+    public constructor(name: string, number: number, terminateByDefault: boolean) {
         this.name = name
         this.number = number
+        this.terminateByDefault = terminateByDefault
     }
 
     public toString(): string {
@@ -16,4 +18,4 @@ export class Signal {
     }
 }
 
-export const SIGINT = new Signal('SIGINT', 2)
+export const SIGINT = new Signal('SIGINT', 2, true)

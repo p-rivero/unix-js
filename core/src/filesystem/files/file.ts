@@ -2,6 +2,7 @@ import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
+import type { Signal } from 'process/signal'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
 
@@ -108,6 +109,13 @@ export abstract class File extends FilesystemNode {
             throw new PermissionDenied()
         }
         return this.implementExecute(context, [this.absolutePath, ...args])
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await -- This method is meant to be overridden
+    public async handleSignal(_context: ExecutionContext, _signal: Signal): Promise<void> {
+        if (!this.executable) {
+            throw new PermissionDenied()
+        }
     }
 
     protected abstract implementRead: ImplementReadSignature
