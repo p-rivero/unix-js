@@ -1,5 +1,5 @@
 import { NoSuchProcess } from 'errors/process'
-import type { ExecutionContext } from 'filesystem/execution-context'
+import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { Process } from 'process/process'
 import type { Signal } from 'process/signal'
@@ -14,10 +14,12 @@ export class ProcessPool {
     }
   
     public startProcess(executionContext: ExecutionContext, file: File, args: string[]): number {
-        const process = new Process(executionContext, file)
-        this.processes.set(this.nextPid, process)
+        const processPid = this.nextPid++
+        const newContext = new ExecutionContext(executionContext)
+        const process = new Process(newContext, file)
+        this.processes.set(processPid, process)
         process.start(args)
-        return this.nextPid++
+        return processPid
     }
 
     public async waitToFinish(pid: number): Promise<number> {

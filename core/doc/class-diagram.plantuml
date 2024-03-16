@@ -1,0 +1,90 @@
+@startuml Simplified class diagram
+
+skinparam Ranksep 80
+
+class FilesystemNode #aaffff {
+    name: string
+    accessType: hidden | locked | normal
+    /absolutePath: string
+    /isVisible: boolean
+    /isReadable: boolean
+}
+
+class Directory #aaffff {
+    getChildrenNames(): string[]
+    getChild(name): FilesystemNode
+}
+FilesystemNode <|-- Directory
+
+class RootDirectory #aaffff {
+}
+Directory <|-- RootDirectory 
+RootDirectory --> RootDirectory : parent
+
+Directory *-u-> "*" FilesystemNode : children
+FilesystemNode --> "1" Directory : parent
+
+class File #aaffff {
+    permissions: read-only | read-write | execute
+    read(): string
+    write(content) / append(content)
+    execute(context): number
+    handleSignal(context, signal)
+}
+FilesystemNode <|-- File
+
+class TextFile #aaffff {
+    content: string
+}
+File <|-- TextFile
+
+class BinaryFile #aaffff {
+    executeFn: Executable
+    handleSignalFn: SignalHandler
+}
+File <|-- BinaryFile
+
+class DeviceFile #aaffff {
+    onRead: ReadFn
+    onWrite: WriteFn
+}
+File <|-- DeviceFile
+
+
+class ExecutionContext {
+    getFileStream(index): File
+    setFileStream(index, file)
+    /stdin = getFileStream(0)
+    /stdout = getFileStream(1)
+    /stderr = getFileStream(2)
+    changeDirectory(path)
+    execute(file, args, background): number
+    createPipe(): [File, File]
+}
+
+ExecutionContext -u-> "*" File: fileStreams
+ExecutionContext -u-> "1" RootDirectory: rootDirectory
+ExecutionContext -u-> "1" Directory: homeDirectory
+ExecutionContext -u-> "1" Directory: currentDirectory
+
+class Process {
+}
+Process -u-> ExecutionContext : context
+Process -u-> File : file
+class ProcessPool {
+    nextPid: number
+    startProcess(executionContext, file, args)
+    waitToFinish(pid)
+    sendSignal(pid, signal)
+}
+ProcessPool *--> "*" Process
+
+ExecutionContext --> "1" ProcessPool: processPool
+
+class Shell {
+    startupCommand: string
+    startupCommandArgs: string[]
+}
+Shell ---> ExecutionContext : context
+
+@enduml

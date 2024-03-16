@@ -6,6 +6,7 @@ import { DeviceFile } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 import { FilesystemPath } from 'filesystem/filesystem-path'
+import { ProcessPool } from 'process/process-pool'
 
 
 export class ExecutionContext {
@@ -13,6 +14,7 @@ export class ExecutionContext {
     public readonly homeDirectory: Directory
     private currentDirectory: Directory
     private readonly fileStreams: (File | undefined)[]
+    private readonly processPool: ProcessPool
     
     public constructor(context: ExecutionContext)
     public constructor(dto: DirectoryDTO, homePath: string)
@@ -21,6 +23,7 @@ export class ExecutionContext {
             this.fileStreams = obj.fileStreams
             this.rootDirectory = obj.rootDirectory
             this.homeDirectory = obj.homeDirectory
+            this.processPool = obj.processPool
             this.currentDirectory = obj.currentDirectory
         } else {
             if (homePath === undefined) {
@@ -29,6 +32,7 @@ export class ExecutionContext {
             this.fileStreams = []
             this.rootDirectory = new RootDirectory(obj)
             this.homeDirectory = ExecutionContext.getHomeDirectory(this.rootDirectory, homePath)
+            this.processPool = new ProcessPool()
             this.currentDirectory = this.homeDirectory
         }
     }
@@ -72,20 +76,6 @@ export class ExecutionContext {
     public set stderr(file: File) {
         this.setFileStream(2, file)
     }
-    
-    private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
-        const path = new FilesystemPath(homePath)
-        if (!path.isAbsolute) {
-            throw new InvalidArgument('The home path must be absolute')
-        }
-        try {
-            const home = root.resolvePath(path.parts)
-            assert(home instanceof Directory)
-            return home
-        } catch (error) {
-            throw new InvalidArgument(`The home path '${homePath}' must point to an existing directory`)
-        }
-    }
 
     public resolvePath(pathStr: string, allowHidden = false): FilesystemNode {
         const path = new FilesystemPath(pathStr)
@@ -95,6 +85,16 @@ export class ExecutionContext {
     public changeDirectory(pathStr: string, allowHidden = false): void {
         const path = new FilesystemPath(pathStr)
         this.currentDirectory = this.baseDirectory(path).resolvePath(path.parts, allowHidden) as Directory
+    }
+
+    public execute(file: File, args: string[], background: true): number
+    public execute(file: File, args: string[], background: false): Promise<number>
+    public execute(file: File, args: string[], background: boolean): number | Promise<number> {
+        const pid = this.processPool.startProcess(this, file, args)
+        if (background) {
+            return pid
+        }
+        return this.processPool.waitToFinish(pid)
     }
 
     public createPipe(): [File, File] {
@@ -125,6 +125,20 @@ export class ExecutionContext {
         }, this.currentDirectory)
         
         return [pipeIn, pipeOut]
+    }
+        
+    private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
+        const path = new FilesystemPath(homePath)
+        if (!path.isAbsolute) {
+            throw new InvalidArgument('The home path must be absolute')
+        }
+        try {
+            const home = root.resolvePath(path.parts)
+            assert(home instanceof Directory)
+            return home
+        } catch (error) {
+            throw new InvalidArgument(`The home path '${homePath}' must point to an existing directory`)
+        }
     }
 
     private baseDirectory(path: FilesystemPath): Directory {

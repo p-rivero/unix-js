@@ -12,10 +12,12 @@ export interface ShellConfigStartupCommand {
 
 export interface ShellConfigStandardStream {
     readonly index: number
+    // TODO: Rename internalPath to absolutePath
     readonly internalPath: string
 }
 
 export interface ShellConfig {
+    // TODO: Remove command directories. Add default env variables
     readonly commandDirectories: readonly string[]
     readonly standardStreams: ShellConfigStandardStream[]
     readonly startupCommand: ShellConfigStartupCommand
@@ -73,6 +75,7 @@ export class Shell {
     }
 
     private findCommand(commandName: string, allowHidden: boolean): File {
+        // TODO: Move this logic to /bin/sh, the startupCommand must always be an absolute path
         const command = this.findCommandInCommandDirectories(commandName, allowHidden)
         if (command !== null) {
             return command

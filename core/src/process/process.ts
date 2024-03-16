@@ -33,12 +33,7 @@ export class Process {
         }
         const abortableContext = new Proxy(this.executionContext, this.abortableContextProxyHandler)
         this.executionPromise = this.file.execute(abortableContext, args)
-    }
 
-    public async waitToFinish(): Promise<number> {
-        if (this.executionPromise === undefined) {
-            throw new InternalError('The process is not running')
-        }
         this.executionPromise
             .then(exitCode => {
                 this.exitCode = exitCode 
@@ -50,6 +45,12 @@ export class Process {
                     this.exception = e as Error
                 }
             })
+    }
+
+    public async waitToFinish(): Promise<number> {
+        if (this.executionPromise === undefined) {
+            throw new InternalError('The process is not running')
+        }
         while (this.exitCode === undefined && this.exception === undefined) {
             // eslint-disable-next-line no-await-in-loop -- Busy waiting here is intentional
             await new Promise((resolve) => {
