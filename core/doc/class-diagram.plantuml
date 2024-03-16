@@ -100,12 +100,12 @@ ProcessProxy --> ProcessPool : pool
 Process *-u-> ProcessProxy : proxy
 
 
-class Unix {
+class UnixShell {
     startupCommand: string
     startupCommandArgs: string[]
     start()
 }
-Unix -u-> ProcessPool : processPool
-Unix .u.> ExecutionContext : <<initializes>>
+UnixShell -u-> ProcessPool : processPool
+UnixShell .u.> ExecutionContext : <<initializes>>
 
 @enduml

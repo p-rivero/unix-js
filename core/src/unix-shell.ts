@@ -1,5 +1,6 @@
 import { InvalidArgument } from 'errors'
-import type { ExecutionContext } from 'filesystem/execution-context'
+import type { DirectoryDTO } from 'filesystem/directories/directory'
+import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { ProcessPool } from 'process/process-pool'
 
@@ -18,18 +19,24 @@ export interface ShellConfig {
     readonly startupCommand: ShellConfigStartup
 }
 
-export class Shell {
+export interface UnixConfig {
+    readonly filesystemRoot: DirectoryDTO
+    readonly homePath: string
+    readonly shell: ShellConfig
+}
+
+export class UnixShell {
     private readonly context: ExecutionContext
     private readonly startupCommand: ShellConfigStartup
     private readonly processPool = new ProcessPool()
 
-    public constructor(context: ExecutionContext, config: ShellConfig) {
-        this.context = context
-        for (const { index, absolutePath: internalPath } of config.standardStreams) {
+    public constructor(config: UnixConfig) {
+        this.context = new ExecutionContext(config.filesystemRoot, config.homePath)
+        for (const { index, absolutePath: internalPath } of config.shell.standardStreams) {
             const file = this.getFile(internalPath)
             this.context.setFileStream(index, file)
         }
-        this.startupCommand = config.startupCommand
+        this.startupCommand = config.shell.startupCommand
     }
 
     public async start(): Promise<number> {
