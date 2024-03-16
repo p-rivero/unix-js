@@ -1,7 +1,7 @@
-import type { ExecutionContext } from 'unix-core'
+import type { Process } from 'unix-core'
 
 let A = 'aaa'
-export async function write(a: ExecutionContext, args: string[]) {
+export async function write(a: Process, args: string[]) {
     A += a
     await a.stderr.write('stderr')
 

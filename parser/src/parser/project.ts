@@ -4,23 +4,24 @@ import type { ShellConfig, UnixConfig } from 'unix-core'
 
 function getShellConfig(): ShellConfig {
     return {
-        commandDirectories: FileFlags.get('isCommandDir').getPaths('directory'),
+        // TODO: use PATH env variable to pass command directories
+        // commandDirectories: FileFlags.get('isCommandDir').getPaths('directory'),
         standardStreams: [
             {
                 index: 0,
-                internalPath: FileFlags.get('isStdin').getSinglePath('file')
+                absolutePath: FileFlags.get('isStdin').getSinglePath('file')
             },
             {
                 index: 1,
-                internalPath: FileFlags.get('isStdout').getSinglePath('file')
+                absolutePath: FileFlags.get('isStdout').getSinglePath('file')
             },
             {
                 index: 2,
-                internalPath: FileFlags.get('isStderr').getSinglePath('file')
+                absolutePath: FileFlags.get('isStderr').getSinglePath('file')
             }
         ],
         startupCommand: {
-            command: FileFlags.get('isStartupCommand').getSinglePath('file'),
+            absolutePath: FileFlags.get('isStartupCommand').getSinglePath('file'),
             args: []
         }
     }
