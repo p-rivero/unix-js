@@ -56,14 +56,14 @@ export class ExecutionContext {
         }
     }
 
-    public resolvePath(pathStr: string, allowHidden = false): FilesystemNode {
-        const path = new FilesystemPath(pathStr)
-        return this.baseDirectory(path).resolvePath(path.parts, allowHidden)
+    public resolvePath(path: string, allowHidden = false): FilesystemNode {
+        const pathObj = new FilesystemPath(path)
+        return this.baseDirectory(pathObj).resolvePath(pathObj.parts, allowHidden)
     }
 
-    public changeDirectory(pathStr: string, allowHidden = false): void {
-        const path = new FilesystemPath(pathStr)
-        this.currentDirectory = this.baseDirectory(path).resolvePath(path.parts, allowHidden) as Directory
+    public changeDirectory(path: string, allowHidden = false): void {
+        const pathObj = new FilesystemPath(path)
+        this.currentDirectory = this.baseDirectory(pathObj).resolvePath(pathObj.parts, allowHidden).asDirectory()
     }
 
     public createPipe(): [File, File] {

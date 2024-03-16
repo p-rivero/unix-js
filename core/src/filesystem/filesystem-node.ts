@@ -44,6 +44,10 @@ export abstract class FilesystemNode {
             : parentPath + PATH_SEPARATOR + this.name
     }
 
+    /**
+     * Casts `this` to a `File`
+     * @throws IsADirectory if `this` is not a `File`
+     */
     public asFile(): File {
         if (this instanceof File) {
             return this
@@ -51,6 +55,10 @@ export abstract class FilesystemNode {
         throw new IsADirectory()
     }
 
+    /**
+     * Casts `this` to a `Directory`
+     * @throws NotADirectory if `this` is not a `Directory`
+     */
     public asDirectory(): Directory {
         if (this instanceof Directory) {
             return this

@@ -1,5 +1,4 @@
 import { PermissionDenied } from 'errors'
-import { ProgramExit } from 'errors/process'
 import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
 import type { Directory } from 'filesystem/directories/directory'
 import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
@@ -21,9 +20,9 @@ export interface BinaryFileDTO extends FileDTO {
     readonly generator: () => BinaryFileMethods
 }
 
-function defaultSignalHandler(_process: ProcessProxy, signal: Signal): void {
+function defaultSignalHandler(process: ProcessProxy, signal: Signal): void {
     if (signal.terminateByDefault) {
-        throw new ProgramExit(128 + signal.number)
+        process.exit(128 + signal.number)
     }
 }
 

@@ -1,10 +1,9 @@
 import { UnixJsError } from 'errors'
 
-export class ProgramExit extends Error {
+export class ProgramExit {
     public readonly exitCode: number
 
     public constructor(exitCode: number) {
-        super()
         this.exitCode = exitCode
     }
 }

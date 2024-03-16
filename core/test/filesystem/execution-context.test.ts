@@ -40,7 +40,7 @@ test('can initialize ExecutionContext', () => {
     expect(context.currentWorkingDirectory.absolutePath).toEqual('/home/user')
 })
 
-test('Home must be a valid directory', () => {
+test('home must be a valid directory', () => {
     expect(() => new ExecutionContext(FILESYSTEM_TREE, '/home/user2'))
         .toThrow(new InvalidArgument("The home path '/home/user2' must point to an existing directory"))
     
