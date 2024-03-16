@@ -3,36 +3,29 @@ import { InternalError } from 'errors'
 import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
+import type { ProcessPool } from 'process/process-pool'
+import { ProcessProxy } from 'process/process-proxy'
 import type { Signal } from 'process/signal'
 
 export class Process {
+    public readonly pid: number
     private readonly file: File
-    private readonly executionContext: ExecutionContext
+    private readonly proxy: ProcessProxy
     private executionPromise: Promise<number> | undefined = undefined
     private exitCode: number | undefined = undefined
     private exception: Error | undefined = undefined
 
-    // We cannot abort executionPromise if sendSignal stops the process, but we can prevent it from making changes to the filesystem
-    private readonly abortableContextProxyHandler: ProxyHandler<ExecutionContext> = {
-        get: (target, prop, receiver) => {
-            if (this.exitCode !== undefined) {
-                throw new ProgramExit(this.exitCode)
-            }
-            return Reflect.get(target, prop, receiver) as unknown
-        }
-    }
-  
-    public constructor(executionContext: ExecutionContext, file: File) {
-        this.executionContext = executionContext
+    public constructor(pool: ProcessPool, pid: number, context: ExecutionContext, file: File) {
+        this.pid = pid
+        this.proxy = new ProcessProxy(this, pool, context, () => this.exitCode)
         this.file = file
     }
   
-    public start(args: string[]): void {
+    public start(args: readonly string[]): void {
         if (this.executionPromise !== undefined) {
             throw new InternalError('The process is already running')
         }
-        const abortableContext = new Proxy(this.executionContext, this.abortableContextProxyHandler)
-        this.executionPromise = this.file.execute(abortableContext, args)
+        this.executionPromise = this.file.execute(this.proxy, args)
 
         this.executionPromise
             .then(exitCode => {
@@ -70,7 +63,7 @@ export class Process {
             throw new InternalError('The process is not running')
         }
         try {
-            await this.file.handleSignal(this.executionContext, signal)
+            await this.file.handleSignal(this.proxy, signal)
         } catch (e) {
             if (e instanceof ProgramExit) {
                 this.exitCode = e.exitCode

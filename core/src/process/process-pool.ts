@@ -13,10 +13,10 @@ export class ProcessPool {
         this.nextPid = 1
     }
   
-    public startProcess(executionContext: ExecutionContext, file: File, args: string[]): number {
+    public startProcess(executionContext: ExecutionContext, file: File, args: readonly string[]): number {
         const processPid = this.nextPid++
         const newContext = new ExecutionContext(executionContext)
-        const process = new Process(newContext, file)
+        const process = new Process(this, processPid, newContext, file)
         this.processes.set(processPid, process)
         process.start(args)
         return processPid

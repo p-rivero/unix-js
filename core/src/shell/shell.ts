@@ -1,37 +1,31 @@
-import assert from 'assert'
-import { InvalidArgument, UnixJsError } from 'errors'
-import { ShellCommandFailure } from 'errors/shell'
-import { Directory } from 'filesystem/directories/directory'
+import { InvalidArgument } from 'errors'
 import type { ExecutionContext } from 'filesystem/execution-context'
-import { File } from 'filesystem/files/file'
+import type { File } from 'filesystem/files/file'
+import { ProcessPool } from 'process/process-pool'
 
-export interface ShellConfigStartupCommand {
-    readonly command: string
+export interface ShellConfigStartup {
+    readonly absolutePath: string
     readonly args: readonly string[]
 }
 
 export interface ShellConfigStandardStream {
     readonly index: number
-    // TODO: Rename internalPath to absolutePath
-    readonly internalPath: string
+    readonly absolutePath: string
 }
 
 export interface ShellConfig {
-    // TODO: Remove command directories. Add default env variables
-    readonly commandDirectories: readonly string[]
     readonly standardStreams: ShellConfigStandardStream[]
-    readonly startupCommand: ShellConfigStartupCommand
+    readonly startupCommand: ShellConfigStartup
 }
 
 export class Shell {
     private readonly context: ExecutionContext
-    private readonly commandDirectories: readonly Directory[]
-    private readonly startupCommand: ShellConfigStartupCommand
+    private readonly startupCommand: ShellConfigStartup
+    private readonly processPool = new ProcessPool()
 
     public constructor(context: ExecutionContext, config: ShellConfig) {
         this.context = context
-        this.commandDirectories = config.commandDirectories.map(path => this.getDirectory(path))
-        for (const { index, internalPath } of config.standardStreams) {
+        for (const { index, absolutePath: internalPath } of config.standardStreams) {
             const file = this.getFile(internalPath)
             this.context.setFileStream(index, file)
         }
@@ -39,77 +33,16 @@ export class Shell {
     }
 
     public async start(): Promise<number> {
-        return this.execute(this.startupCommand.command, this.startupCommand.args, true)
-    }
-
-    public async execute(command: string, args: readonly string[], allowHidden = false): Promise<number> {
-        const commandFile = this.findCommand(command, allowHidden)
-        try {
-            return await commandFile.execute(this.context, args)
-        } catch (error) {
-            if (error instanceof UnixJsError) {
-                throw new ShellCommandFailure(command, error)
-            }
-            throw error
-        }
-    }
-
-    private getDirectory(path: string): Directory {
-        try {
-            const node = this.context.resolvePath(path, true)
-            assert(node instanceof Directory)
-            return node
-        } catch (error) {
-            throw new InvalidArgument(`Directory path ${path} must point to a directory`)
-        }
+        const commandFile = this.getFile(this.startupCommand.absolutePath)
+        const pid = this.processPool.startProcess(this.context, commandFile, this.startupCommand.args)
+        return this.processPool.waitToFinish(pid)
     }
 
     private getFile(path: string): File {
         try {
-            const node = this.context.resolvePath(path, true)
-            assert(node instanceof File)
-            return node
+            return this.context.resolvePath(path, true).asFile()
         } catch (error) {
             throw new InvalidArgument(`File path ${path} must point to an existing file`)
-        }
-    }
-
-    private findCommand(commandName: string, allowHidden: boolean): File {
-        // TODO: Move this logic to /bin/sh, the startupCommand must always be an absolute path
-        const command = this.findCommandInCommandDirectories(commandName, allowHidden)
-        if (command !== null) {
-            return command
-        }
-        const commandOrError = this.findCommandInCurrentDirectory(commandName, allowHidden)
-        if (commandOrError instanceof File) {
-            return commandOrError
-        }
-        throw new ShellCommandFailure(commandName, commandOrError)
-    }
-
-    private findCommandInCommandDirectories(commandName: string, allowHidden: boolean): File | null {
-        for (const directory of this.commandDirectories) {
-            try {
-                const commandFile = directory.getChild(commandName, allowHidden)
-                assert(commandFile instanceof File && commandFile.executable)
-                return commandFile
-            } catch (error) {
-                // Continue searching
-            }
-        }
-        return null
-    }
-
-    private findCommandInCurrentDirectory(commandName: string, allowHidden: boolean): File | UnixJsError {
-        try {
-            const commandFile = this.context.resolvePath(commandName, allowHidden)
-            assert(commandFile instanceof File)
-            return commandFile
-        } catch (error) {
-            if (error instanceof UnixJsError) {
-                return error
-            }
-            throw error
         }
     }
 }

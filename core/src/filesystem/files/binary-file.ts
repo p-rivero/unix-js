@@ -2,13 +2,13 @@ import { PermissionDenied } from 'errors'
 import { ProgramExit } from 'errors/process'
 import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
 import type { Directory } from 'filesystem/directories/directory'
-import type { ExecutionContext } from 'filesystem/execution-context'
 import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
+import type { ProcessProxy } from 'process/process-proxy'
 import type { Signal } from 'process/signal'
 
 export type ExecutableRet = number | undefined | Promise<number | undefined>
-export type Executable = (context: ExecutionContext, args: string[]) => ExecutableRet
-export type SignalHandler = (context: ExecutionContext, signal: Signal) => void | Promise<void>
+export type Executable = (process: ProcessProxy, args: string[]) => ExecutableRet
+export type SignalHandler = (process: ProcessProxy, signal: Signal) => void | Promise<void>
 
 export interface BinaryFileMethods {
     execute: Executable
@@ -21,7 +21,7 @@ export interface BinaryFileDTO extends FileDTO {
     readonly generator: () => BinaryFileMethods
 }
 
-function defaultSignalHandler(_context: ExecutionContext, signal: Signal): void {
+function defaultSignalHandler(_process: ProcessProxy, signal: Signal): void {
     if (signal.terminateByDefault) {
         throw new ProgramExit(128 + signal.number)
     }
@@ -48,8 +48,8 @@ export class BinaryFile extends File {
         return ret ?? 0
     }
 
-    public override async handleSignal(context: ExecutionContext, signal: Signal): Promise<void> {
-        await super.handleSignal(context, signal)
-        await this.handleSignalFn(context, signal)
+    public override async handleSignal(process: ProcessProxy, signal: Signal): Promise<void> {
+        await super.handleSignal(process, signal)
+        await this.handleSignalFn(process, signal)
     }
 }

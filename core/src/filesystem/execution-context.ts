@@ -56,27 +56,6 @@ export class ExecutionContext {
         }
     }
 
-    public get stdin(): File {
-        return this.getFileStream(0)
-    }
-    public set stdin(file: File) {
-        this.setFileStream(0, file)
-    }
-
-    public get stdout(): File {
-        return this.getFileStream(1)
-    }
-    public set stdout(file: File) {
-        this.setFileStream(1, file)
-    }
-
-    public get stderr(): File {
-        return this.getFileStream(2)
-    }
-    public set stderr(file: File) {
-        this.setFileStream(2, file)
-    }
-
     public resolvePath(pathStr: string, allowHidden = false): FilesystemNode {
         const path = new FilesystemPath(pathStr)
         return this.baseDirectory(path).resolvePath(path.parts, allowHidden)
@@ -85,16 +64,6 @@ export class ExecutionContext {
     public changeDirectory(pathStr: string, allowHidden = false): void {
         const path = new FilesystemPath(pathStr)
         this.currentDirectory = this.baseDirectory(path).resolvePath(path.parts, allowHidden) as Directory
-    }
-
-    public execute(file: File, args: string[], background: true): number
-    public execute(file: File, args: string[], background: false): Promise<number>
-    public execute(file: File, args: string[], background: boolean): number | Promise<number> {
-        const pid = this.processPool.startProcess(this, file, args)
-        if (background) {
-            return pid
-        }
-        return this.processPool.waitToFinish(pid)
     }
 
     public createPipe(): [File, File] {
@@ -126,7 +95,7 @@ export class ExecutionContext {
         
         return [pipeIn, pipeOut]
     }
-        
+    
     private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
         const path = new FilesystemPath(homePath)
         if (!path.isAbsolute) {

@@ -28,8 +28,8 @@ class File #aaffff {
     permissions: read-only | read-write | execute
     read(): string
     write(content) / append(content)
-    execute(context): number
-    handleSignal(context, signal)
+    execute(processProxy): number
+    handleSignal(processProxy, signal)
 }
 FilesystemNode <|-- File
 
@@ -52,13 +52,10 @@ File <|-- DeviceFile
 
 
 class ExecutionContext {
+    resolvePath(path): FilesystemNode
+    changeDirectory(path)
     getFileStream(index): File
     setFileStream(index, file)
-    /stdin = getFileStream(0)
-    /stdout = getFileStream(1)
-    /stderr = getFileStream(2)
-    changeDirectory(path)
-    execute(file, args, background): number
     createPipe(): [File, File]
 }
 
@@ -68,23 +65,47 @@ ExecutionContext -u-> "1" Directory: homeDirectory
 ExecutionContext -u-> "1" Directory: currentDirectory
 
 class Process {
+    pid: number
+    start(args)
+    waitToFinish()
+    sendSignal(signal)
+    
 }
-Process -u-> ExecutionContext : context
 Process -u-> File : file
+BinaryFile ..> ProcessProxy : "<<executable uses>>"
 class ProcessPool {
     nextPid: number
-    startProcess(executionContext, file, args)
+    startProcess(context, file, args)
     waitToFinish(pid)
     sendSignal(pid, signal)
 }
 ProcessPool *--> "*" Process
 
-ExecutionContext --> "1" ProcessPool: processPool
+' Process --> "1" ProcessPool: pool
 
-class Shell {
+class ProcessProxy {
+    pid = process.pid
+    /stdin = context.getFileStream(0)
+    /stdout = context.getFileStream(1)
+    /stderr = context.getFileStream(2)
+    resolvePath(path): FilesystemNode
+    changeDirectory(path)
+    execute(file, args, background): number
+    waitToFinish(pid)
+    sendSignal(pid, signal)
+}
+ProcessProxy -u-> ExecutionContext : context
+ProcessProxy --> Process : process
+ProcessProxy --> ProcessPool : pool
+Process *-u-> ProcessProxy : proxy
+
+
+class Unix {
     startupCommand: string
     startupCommandArgs: string[]
+    start()
 }
-Shell ---> ExecutionContext : context
+Unix -u-> ProcessPool : processPool
+Unix .u.> ExecutionContext : <<initializes>>
 
 @enduml

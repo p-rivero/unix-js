@@ -4,11 +4,11 @@ import { InvalidArgument, PermissionDenied } from 'errors'
 import { NoSuchFileOrDirectory } from 'errors/filesystem'
 import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { RootDirectory } from 'filesystem/directories/root-directory'
-import type { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile } from 'filesystem/files/binary-file'
 import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
+import type { ProcessProxy } from 'process/process-proxy'
 
 const parent = new RootDirectory({
     name: 'test',
@@ -16,7 +16,7 @@ const parent = new RootDirectory({
     children: []
 })
 
-function mockContext(): ExecutionContext {
+function mockProcess(): ProcessProxy {
     function mockStream(): File {
         return {
             read: mock(() => ''),
@@ -27,7 +27,7 @@ function mockContext(): ExecutionContext {
         stdin: mockStream(),
         stdout: mockStream(),
         stderr: mockStream()
-    } as unknown as ExecutionContext
+    } as unknown as ProcessProxy
 }
 
 test('file must have valid name', () => {
@@ -190,10 +190,10 @@ test('binary files can be executable', async() => {
     expect(await file.read()).toEqual('\n** Binary file **\n')
     expect(file.write('foo')).rejects.toThrow(new PermissionDenied())
 
-    const context = mockContext()
-    expect(await file.execute(context, ['a', 'b'])).toEqual(123)
+    const process = mockProcess()
+    expect(await file.execute(process, ['a', 'b'])).toEqual(123)
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(context.stdout.write).toHaveBeenCalledTimes(1)
+    expect(process.stdout.write).toHaveBeenCalledTimes(1)
 })
 
 test('readline from text file', async() => {

@@ -1,7 +1,7 @@
 import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
-import type { ExecutionContext } from 'filesystem/execution-context'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
+import type { ProcessProxy } from 'process/process-proxy'
 import type { Signal } from 'process/signal'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
@@ -12,7 +12,7 @@ export interface FileDTO extends FilesystemNodeDTO {
 
 export type ImplementReadSignature = (range?: [number, number]) => Promise<string>
 export type ImplementWriteSignature = (content: string, position: number | undefined, truncate: boolean) => Promise<void>
-export type ImplementExecuteSignature = (context: ExecutionContext, args: string[]) => Promise<number>
+export type ImplementExecuteSignature = (process: ProcessProxy, args: string[]) => Promise<number>
 
 export class FileHandle {
     private readonly file: File
@@ -104,15 +104,15 @@ export abstract class File extends FilesystemNode {
         await this.write(content, true)
     }
 
-    public async execute(context: ExecutionContext, args: readonly string[]): Promise<number> {
+    public async execute(process: ProcessProxy, args: readonly string[]): Promise<number> {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementExecute(context, [this.absolutePath, ...args])
+        return this.implementExecute(process, [this.absolutePath, ...args])
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await -- This method is meant to be overridden
-    public async handleSignal(_context: ExecutionContext, _signal: Signal): Promise<void> {
+    public async handleSignal(_process: ProcessProxy, _signal: Signal): Promise<void> {
         if (!this.executable) {
             throw new PermissionDenied()
         }
