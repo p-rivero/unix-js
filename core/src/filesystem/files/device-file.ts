@@ -2,7 +2,7 @@ import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
 import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
 
-type ReadFn = () => string | Promise<string>
+type ReadFn = (numChars?: number) => string | Promise<string>
 type WriteFn = (content: string) => void | Promise<void>
 
 export interface DeviceFileMethods {
@@ -30,7 +30,10 @@ export class DeviceFile extends File {
         this.onWrite = methods.write ?? permissionDenied
     }
 
-    public override implementRead: ImplementReadSignature = async() => this.onRead()
+    public override implementRead: ImplementReadSignature = async(range) => {
+        const numChars = range ? range[1] - range[0] : undefined
+        return this.onRead(numChars)
+    }
 
     public override implementWrite: ImplementWriteSignature = async content => this.onWrite(content)
 

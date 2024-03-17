@@ -67,16 +67,17 @@ export class ExecutionContext {
     }
 
     public createPipe(): [File, File] {
-        const buffer: string[] = []
+        let buffer = ''
     
         const pipeOut = new DeviceFile({
             name: 'pipeIn',
             type: 'device-file',
             permissions: 'read-only',
             generator: () => ({
-                read: () => {
-                    const content = buffer.join('')
-                    buffer.splice(0, buffer.length)
+                read: numChars => {
+                    const readLength = numChars ?? buffer.length
+                    const content = buffer.slice(0, readLength)
+                    buffer = buffer.slice(readLength)
                     return content
                 }
             })
@@ -88,7 +89,7 @@ export class ExecutionContext {
             permissions: 'read-write',
             generator: () => ({
                 write: content => {
-                    buffer.push(content) 
+                    buffer += content
                 }
             })
         }, this.currentDirectory)

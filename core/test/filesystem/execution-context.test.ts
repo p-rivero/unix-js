@@ -119,3 +119,15 @@ test('can create pipes', async() => {
     expect(pipeOut.write('foo')).rejects.toThrow(new PermissionDenied())
     expect(pipeIn.read()).rejects.toThrow(new PermissionDenied())
 })
+
+test('can read single characters from pipes', async() => {
+    const context = new ExecutionContext(FILESYSTEM_TREE, '/')
+    const [pipeIn, pipeOut] = context.createPipe()
+
+    await pipeIn.write('abcd')
+    const pipeOutHandle = pipeOut.open()
+    expect(await pipeOutHandle.read(1)).toBe('a')
+    expect(await pipeOutHandle.read(2)).toBe('bc')
+    await pipeIn.write('e')
+    expect(await pipeOutHandle.read(99)).toBe('de')
+})
