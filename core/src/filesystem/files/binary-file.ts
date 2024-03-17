@@ -5,8 +5,9 @@ import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadS
 import type { ProcessProxy } from 'process/process-proxy'
 import type { Signal } from 'process/signal'
 
-export type ExecutableRet = number | undefined | Promise<number | undefined>
-export type Executable = (process: ProcessProxy, args: string[]) => ExecutableRet
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- We want to allow user functions to return void
+export type ExecutableRet = void | number | undefined
+export type Executable = (process: ProcessProxy, args: string[]) => ExecutableRet | Promise<ExecutableRet>
 export type SignalHandler = (process: ProcessProxy, signal: Signal) => void | Promise<void>
 
 export interface BinaryFileMethods {

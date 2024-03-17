@@ -49,11 +49,10 @@ export class ExecutionContext {
         return stream
     }
     public setFileStream(index: number, file: File): void {
-        if (index >= this.fileStreams.length) {
-            this.fileStreams.push(file)
-        } else {
-            this.fileStreams[index] = file
+        while (index >= this.fileStreams.length) {
+            this.fileStreams.push(undefined)
         }
+        this.fileStreams[index] = file
     }
 
     public resolvePath(path: string, allowHidden = false): FilesystemNode {
