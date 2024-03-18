@@ -73,15 +73,15 @@ class Process {
 }
 Process -u-> File : file
 BinaryFile ..> ProcessProxy : "<<executable uses>>"
-class ProcessPool {
+class ProcessTable {
     nextPid: number
     startProcess(context, file, args)
     waitToFinish(pid)
     sendSignal(pid, signal)
 }
-ProcessPool *--> "*" Process
+ProcessTable *--> "*" Process
 
-' Process --> "1" ProcessPool: pool
+' Process --> "1" ProcessTable: table
 
 class ProcessProxy {
     pid = process.pid
@@ -96,7 +96,7 @@ class ProcessProxy {
 }
 ProcessProxy -u-> ExecutionContext : context
 ProcessProxy --> Process : process
-ProcessProxy --> ProcessPool : pool
+ProcessProxy --> ProcessTable : table
 Process *-u-> ProcessProxy : proxy
 
 
@@ -105,7 +105,7 @@ class UnixShell {
     startupCommandArgs: string[]
     start()
 }
-UnixShell -u-> ProcessPool : processPool
+UnixShell -u-> ProcessTable : processTable
 UnixShell .u.> ExecutionContext : <<initializes>>
 
 @enduml

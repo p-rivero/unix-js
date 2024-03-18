@@ -2,7 +2,7 @@ import { InvalidArgument } from 'errors'
 import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
-import { ProcessPool } from 'process/process-pool'
+import { ProcessTable } from 'process/process-table'
 
 export interface ShellConfigStartup {
     readonly absolutePath: string
@@ -28,7 +28,7 @@ export interface UnixConfig {
 export class UnixShell {
     private readonly context: ExecutionContext
     private readonly startupCommand: ShellConfigStartup
-    private readonly processPool = new ProcessPool()
+    private readonly processTable = new ProcessTable()
 
     public constructor(config: UnixConfig) {
         this.context = new ExecutionContext(config.filesystemRoot, config.homePath)
@@ -41,8 +41,8 @@ export class UnixShell {
 
     public async start(): Promise<number> {
         const commandFile = this.getFile(this.startupCommand.absolutePath)
-        const pid = this.processPool.startProcess(this.context, commandFile, this.startupCommand.args)
-        return this.processPool.waitToFinish(pid)
+        const pid = this.processTable.startProcess(this.context, commandFile, this.startupCommand.args)
+        return this.processTable.waitToFinish(pid)
     }
 
     private getFile(path: string): File {

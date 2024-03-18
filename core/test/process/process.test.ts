@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
-import { ProcessPool } from 'process/process-pool'
+import { ProcessTable } from 'process/process-table'
 import { SIGINT } from 'process/signal'
 
 function getContext(): ExecutionContext {
@@ -39,31 +39,31 @@ async function infiniteLoop(): Promise<never> {
 }
 
 test('can execute simple binaries', async() => {
-    const pool = new ProcessPool()
+    const table = new ProcessTable()
     const context = getContext()
     const noOp = createBinary(context, {
         execute: (_process, args) => {
             expect(args).toEqual(['/someBinary'])
         }
     })
-    const pid = pool.startProcess(context, noOp, [])
+    const pid = table.startProcess(context, noOp, [])
     expect(pid).toBe(1)
-    const result = await pool.waitToFinish(pid)
+    const result = await table.waitToFinish(pid)
     expect(result).toBe(0)
 
     const addArgs = createBinary(context, {
         execute: (_process, args) => args.slice(1).map(Number).reduce((a, b) => a + b)
     })
-    const pid2 = pool.startProcess(context, addArgs, ['1', '2', '3'])
+    const pid2 = table.startProcess(context, addArgs, ['1', '2', '3'])
     expect(pid2).toBe(2)
-    const result2 = await pool.waitToFinish(pid2)
+    const result2 = await table.waitToFinish(pid2)
     expect(result2).toBe(6)
-    const result2Again = await pool.waitToFinish(pid2)
+    const result2Again = await table.waitToFinish(pid2)
     expect(result2Again).toBe(6)
 })
 
 test('process can write to stdout', async() => {
-    const pool = new ProcessPool()
+    const table = new ProcessTable()
     const context = getContext()
     const bin = createBinary(context, {
         execute: async(process, args) => {
@@ -71,8 +71,8 @@ test('process can write to stdout', async() => {
             process.exit(42)
         }
     })
-    const pid = pool.startProcess(context, bin, ['foo', 'bar'])
-    const result = await pool.waitToFinish(pid)
+    const pid = table.startProcess(context, bin, ['foo', 'bar'])
+    const result = await table.waitToFinish(pid)
     expect(result).toBe(42)
     const stdout = await context.resolvePath('/StdoutFile').asFile().read()
     expect(stdout).toBe('I got the args: /someBinary foo bar')
@@ -80,14 +80,14 @@ test('process can write to stdout', async() => {
 
 
 test('can interrupt a looping process', async() => {
-    const pool = new ProcessPool()
+    const table = new ProcessTable()
     const context = getContext()
     const loopForever = createBinary(context, {
         execute: async() => infiniteLoop()
     })
-    const pid = pool.startProcess(context, loopForever, [])
-    await pool.sendSignal(pid, SIGINT)
-    const result = await pool.waitToFinish(pid)
+    const pid = table.startProcess(context, loopForever, [])
+    await table.sendSignal(pid, SIGINT)
+    const result = await table.waitToFinish(pid)
     expect(result).toBe(130)
 
     const withSignalHandler = createBinary(context, {
@@ -97,8 +97,8 @@ test('can interrupt a looping process', async() => {
             process.exit(12)
         }
     })
-    const pid2 = pool.startProcess(context, withSignalHandler, [])
-    await pool.sendSignal(pid2, SIGINT)
-    const result2 = await pool.waitToFinish(pid2)
+    const pid2 = table.startProcess(context, withSignalHandler, [])
+    await table.sendSignal(pid2, SIGINT)
+    const result2 = await table.waitToFinish(pid2)
     expect(result2).toBe(12)
 })

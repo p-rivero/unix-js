@@ -3,8 +3,8 @@ import { InternalError } from 'errors'
 import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
-import type { ProcessPool } from 'process/process-pool'
 import { ProcessProxy } from 'process/process-proxy'
+import type { ProcessTable } from 'process/process-table'
 import type { Signal } from 'process/signal'
 
 export class Process {
@@ -15,9 +15,9 @@ export class Process {
     private exitCode: number | undefined = undefined
     private exception: Error | undefined = undefined
 
-    public constructor(pool: ProcessPool, pid: number, context: ExecutionContext, file: File) {
+    public constructor(table: ProcessTable, pid: number, context: ExecutionContext, file: File) {
         this.pid = pid
-        this.proxy = new ProcessProxy(this, pool, context, () => this.exitCode)
+        this.proxy = new ProcessProxy(this, table, context, () => this.exitCode)
         this.file = file
     }
   

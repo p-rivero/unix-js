@@ -6,7 +6,7 @@ import { DeviceFile } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 import { FilesystemPath } from 'filesystem/filesystem-path'
-import { ProcessPool } from 'process/process-pool'
+import { ProcessTable } from 'process/process-table'
 
 
 export class ExecutionContext {
@@ -14,7 +14,7 @@ export class ExecutionContext {
     public readonly homeDirectory: Directory
     private currentDirectory: Directory
     private readonly fileStreams: (File | undefined)[]
-    private readonly processPool: ProcessPool
+    private readonly processTable: ProcessTable
     
     public constructor(context: ExecutionContext)
     public constructor(dto: DirectoryDTO, homePath: string)
@@ -23,7 +23,7 @@ export class ExecutionContext {
             this.fileStreams = obj.fileStreams
             this.rootDirectory = obj.rootDirectory
             this.homeDirectory = obj.homeDirectory
-            this.processPool = obj.processPool
+            this.processTable = obj.processTable
             this.currentDirectory = obj.currentDirectory
         } else {
             if (homePath === undefined) {
@@ -32,7 +32,7 @@ export class ExecutionContext {
             this.fileStreams = []
             this.rootDirectory = new RootDirectory(obj)
             this.homeDirectory = ExecutionContext.getHomeDirectory(this.rootDirectory, homePath)
-            this.processPool = new ProcessPool()
+            this.processTable = new ProcessTable()
             this.currentDirectory = this.homeDirectory
         }
     }

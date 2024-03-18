@@ -4,7 +4,7 @@ import type { File } from 'filesystem/files/file'
 import { Process } from 'process/process'
 import type { Signal } from 'process/signal'
 
-export class ProcessPool {
+export class ProcessTable {
     private readonly processes: Map<number, Process>
     private nextPid: number
   

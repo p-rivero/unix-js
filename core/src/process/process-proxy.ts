@@ -3,19 +3,19 @@ import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 import type { Process } from 'process/process'
-import type { ProcessPool } from 'process/process-pool'
+import type { ProcessTable } from 'process/process-table'
 
 type GetPendingError = () => number | undefined
 
 export class ProcessProxy {
     private readonly process: Process
-    private readonly pool: ProcessPool
+    private readonly table: ProcessTable
     private readonly context: ExecutionContext
     private readonly getPendingError: GetPendingError
 
-    public constructor(process: Process, pool: ProcessPool, context: ExecutionContext, getPendingError: GetPendingError) {
+    public constructor(process: Process, table: ProcessTable, context: ExecutionContext, getPendingError: GetPendingError) {
         this.process = process
-        this.pool = pool
+        this.table = table
         this.context = context
         this.getPendingError = getPendingError
     }
@@ -131,11 +131,11 @@ export class ProcessProxy {
     public execute(executable: File | string, args: string[], background: boolean): number | Promise<number> {
         this.checkInterrupted()
         const file = typeof executable === 'string' ? this.resolvePath(executable).asFile() : executable
-        const pid = this.pool.startProcess(this.context, file, args)
+        const pid = this.table.startProcess(this.context, file, args)
         if (background) {
             return pid
         }
-        return this.pool.waitToFinish(pid)
+        return this.table.waitToFinish(pid)
     }
 
     private checkInterrupted(): void {
