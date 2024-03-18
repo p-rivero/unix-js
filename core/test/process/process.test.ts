@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-constant-condition,
+    no-await-in-loop, no-unmodified-loop-condition */
+
 import { expect, test } from 'bun:test'
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
@@ -28,13 +31,15 @@ function createBinary(context: ExecutionContext, methods: BinaryFileMethods): Bi
     }, parent)
 }
 
+async function wait(time: number): Promise<void> {
+    await new Promise((resolve) => {
+        setTimeout(resolve, time) 
+    })
+}
+
 async function infiniteLoop(): Promise<never> {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
     while (true) {
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise((resolve) => {
-            setTimeout(resolve, 100) 
-        })
+        await wait(100)
     }
 }
 
@@ -78,6 +83,18 @@ test('process can write to stdout', async() => {
     expect(stdout).toBe('I got the args: /someBinary foo bar')
 })
 
+test('thrown exceptions are re-raised to the parent', () => {
+    const table = new ProcessTable()
+    const context = getContext()
+    const bin = createBinary(context, {
+        execute: async() => {
+            await wait(10)
+            throw new Error('I failed')
+        }
+    })
+    const pid = table.startProcess(context, bin, [])
+    expect(table.waitToFinish(pid)).rejects.toThrow(new Error('I failed'))
+})
 
 test('can interrupt a looping process', async() => {
     const table = new ProcessTable()
@@ -101,4 +118,26 @@ test('can interrupt a looping process', async() => {
     await table.sendSignal(pid2, SIGINT)
     const result2 = await table.waitToFinish(pid2)
     expect(result2).toBe(12)
+})
+
+test('zombie processes never execute signal handlers', async() => {
+    const table = new ProcessTable()
+    const context = getContext()
+    let done = false
+    const bin = createBinary(context, {
+        execute: async() => {
+            await wait(10)
+            done = true
+        },
+        handleSignal: () => {
+            throw new Error('should not be called')
+        }
+    })
+    const pid = table.startProcess(context, bin, [])
+    expect(async() => table.sendSignal(pid, SIGINT)).toThrow(new Error('should not be called'))
+    expect(async() => table.sendSignal(pid, SIGINT)).toThrow(new Error('should not be called'))
+    while (!done) {
+        await wait(1)
+    }
+    expect(async() => table.sendSignal(pid, SIGINT)).not.toThrow()
 })

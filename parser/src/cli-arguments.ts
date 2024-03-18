@@ -11,7 +11,7 @@ export interface CliArguments {
 export const OUT_FILE_STDOUT = '__stdout__'
 export const TEMPLATE_FILE_DEFAULT = '__default_template__'
 
-export function parseCliArgs(): CliArguments { // eslint-disable-line consistent-return -- False positive
+export function parseCliArgs(): CliArguments {
     try {
         return parse({
             inputDir: {
@@ -53,6 +53,6 @@ export function parseCliArgs(): CliArguments { // eslint-disable-line consistent
         } else {
             console.error(e)
         }
-        process.exit(1)
+        return process.exit(1)
     }
 }

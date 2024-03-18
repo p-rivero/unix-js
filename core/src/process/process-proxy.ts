@@ -108,7 +108,7 @@ export class ProcessProxy {
      */
     public exit(code = 0): never {
         this.checkInterrupted()
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal -- It's better for ProgramExit not to extend Error
         throw new ProgramExit(code)
     }
 

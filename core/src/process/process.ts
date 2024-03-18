@@ -7,6 +7,8 @@ import { ProcessProxy } from 'process/process-proxy'
 import type { ProcessTable } from 'process/process-table'
 import type { Signal } from 'process/signal'
 
+export type ProcessState = 'spawn' | 'running' | 'zombie'
+
 export class Process {
     public readonly pid: number
     private readonly file: File
@@ -20,9 +22,19 @@ export class Process {
         this.proxy = new ProcessProxy(this, table, context, () => this.exitCode)
         this.file = file
     }
+
+    public get state(): ProcessState {
+        if (this.executionPromise === undefined) {
+            return 'spawn'
+        }
+        if (this.exitCode === undefined && this.exception === undefined) {
+            return 'running'
+        }
+        return 'zombie'
+    }
   
     public start(args: readonly string[]): void {
-        if (this.executionPromise !== undefined) {
+        if (this.state !== 'spawn') {
             throw new InternalError('The process is already running')
         }
         this.executionPromise = this.file.execute(this.proxy, args)
@@ -41,10 +53,10 @@ export class Process {
     }
 
     public async waitToFinish(): Promise<number> {
-        if (this.executionPromise === undefined) {
+        if (this.state === 'spawn') {
             throw new InternalError('The process is not running')
         }
-        while (this.exitCode === undefined && this.exception === undefined) {
+        while (this.state === 'running') {
             // eslint-disable-next-line no-await-in-loop -- Busy waiting here is intentional
             await new Promise((resolve) => {
                 setTimeout(resolve, 20) 
@@ -59,8 +71,11 @@ export class Process {
     }
     
     public async sendSignal(signal: Signal): Promise<void> {
-        if (this.executionPromise === undefined) {
+        if (this.state === 'spawn') {
             throw new InternalError('The process is not running')
+        }
+        if (this.state === 'zombie') {
+            return
         }
         try {
             await this.file.handleSignal(this.proxy, signal)
