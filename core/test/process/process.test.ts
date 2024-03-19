@@ -2,6 +2,7 @@
     no-await-in-loop, no-unmodified-loop-condition */
 
 import { expect, test } from 'bun:test'
+import { NoSuchProcess } from 'errors/process'
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
 import { ProcessTable } from 'process/process-table'
@@ -63,8 +64,7 @@ test('can execute simple binaries', async() => {
     expect(pid2).toBe(2)
     const result2 = await table.waitToFinish(pid2)
     expect(result2).toBe(6)
-    const result2Again = await table.waitToFinish(pid2)
-    expect(result2Again).toBe(6)
+    expect(table.waitToFinish(pid2)).rejects.toThrow(new NoSuchProcess())
 })
 
 test('process can write to stdout', async() => {

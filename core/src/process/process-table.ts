@@ -27,7 +27,9 @@ export class ProcessTable {
         if (process === undefined) {
             throw new NoSuchProcess()
         }
-        return process.waitToFinish()
+        const result = await process.waitToFinish()
+        this.processes.delete(pid)
+        return result
     }
 
     public async sendSignal(pid: number, signal: Signal): Promise<void> {
