@@ -131,7 +131,7 @@ export class ProcessProxy {
     public execute(executable: File | string, args: string[], background: boolean): number | Promise<number> {
         this.checkInterrupted()
         const file = typeof executable === 'string' ? this.resolvePath(executable).asFile() : executable
-        const pid = this.table.startProcess(this.context, file, args)
+        const pid = this.table.startProcess(this.process, file, args)
         if (background) {
             return pid
         }

@@ -9,18 +9,45 @@ import type { Signal } from 'process/signal'
 
 export type ProcessState = 'spawn' | 'running' | 'zombie'
 
+export interface ProcessParams {
+    readonly pid: number
+    readonly ppid: number
+    readonly pgid: number
+    readonly context: ExecutionContext
+    readonly file: File
+}
+
 export class Process {
     public readonly pid: number
     private readonly file: File
+    public readonly executionContext: ExecutionContext
     private readonly proxy: ProcessProxy
     private executionPromise: Promise<number> | undefined = undefined
     private exitCode: number | undefined = undefined
     private exception: Error | undefined = undefined
+    private processGroup: number
+    private parentPid: number
 
-    public constructor(table: ProcessTable, pid: number, context: ExecutionContext, file: File) {
-        this.pid = pid
-        this.proxy = new ProcessProxy(this, table, context, () => this.exitCode)
-        this.file = file
+    public constructor(table: ProcessTable, params: ProcessParams) {
+        this.pid = params.pid
+        this.parentPid = params.ppid
+        this.processGroup = params.pgid
+        this.executionContext = params.context
+        this.proxy = new ProcessProxy(this, table, params.context, () => this.exitCode)
+        this.file = params.file
+    }
+
+    public get pgid(): number {
+        return this.processGroup
+    }
+    public set pgid(value: number) {
+        this.processGroup = value
+    }
+    public get ppid(): number {
+        return this.parentPid
+    }
+    public set ppid(value: number) {
+        this.parentPid = value
     }
 
     public get state(): ProcessState {

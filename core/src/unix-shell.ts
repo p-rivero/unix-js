@@ -28,7 +28,7 @@ export interface UnixConfig {
 export class UnixShell {
     private readonly context: ExecutionContext
     private readonly startupCommand: ShellConfigStartup
-    private readonly processTable = new ProcessTable()
+    private readonly processTable: ProcessTable
 
     public constructor(config: UnixConfig) {
         this.context = new ExecutionContext(config.filesystemRoot, config.homePath)
@@ -36,12 +36,13 @@ export class UnixShell {
             const file = this.getFile(internalPath)
             this.context.setFileStream(index, file)
         }
+        this.processTable = new ProcessTable(this.context)
         this.startupCommand = config.shell.startupCommand
     }
 
     public async start(): Promise<number> {
         const commandFile = this.getFile(this.startupCommand.absolutePath)
-        const pid = this.processTable.startProcess(this.context, commandFile, this.startupCommand.args)
+        const pid = this.processTable.startProcess(null, commandFile, this.startupCommand.args)
         return this.processTable.waitToFinish(pid)
     }
 

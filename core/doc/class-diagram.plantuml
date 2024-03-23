@@ -66,6 +66,8 @@ ExecutionContext -u-> "1" Directory: currentDirectory
 
 class Process {
     pid: number
+    ppid: number
+    pgid: number
     start(args)
     waitToFinish()
     sendSignal(signal)
@@ -90,8 +92,7 @@ class ProcessProxy {
     /stderr = context.getFileStream(2)
     resolvePath(path): FilesystemNode
     changeDirectory(path)
-    execute(file, args, background): number
-    waitToFinish(pid)
+    execute(executable, args, background): number
     sendSignal(pid, signal)
 }
 ProcessProxy -u-> ExecutionContext : context
