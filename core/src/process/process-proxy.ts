@@ -138,6 +138,27 @@ export class ProcessProxy {
         return this.table.waitToFinish(pid)
     }
 
+    /**
+     * Updates the process group of a process. This method should only be used by the shell, 
+     * do not call it unless you know what you're doing.
+     * @param pid The process ID of the process to update
+     * @param pgid The new process group ID
+     */
+    public updateProcessGroup(pid: number, pgid: number): void {
+        this.checkInterrupted()
+        this.table.updateProcessGroup(pid, pgid)
+    }
+
+    /**
+     * Updates the foreground process group. This method should only be used by the shell, 
+     * do not call it unless you know what you're doing.
+     * @param pgid The new foreground process group ID
+     */
+    public updateForegroundProcessGroup(pgid: number): void {
+        this.checkInterrupted()
+        this.table.foregroundPgid = pgid
+    }
+
     private checkInterrupted(): void {
         const pendingError = this.getPendingError()
         if (pendingError !== undefined) {

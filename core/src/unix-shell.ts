@@ -3,6 +3,7 @@ import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { ProcessTable } from 'process/process-table'
+import { SIGINT } from 'process/signal'
 
 export interface ShellConfigStartup {
     readonly absolutePath: string
@@ -44,6 +45,10 @@ export class UnixShell {
         const commandFile = this.getFile(this.startupCommand.absolutePath)
         const pid = this.processTable.startProcess(null, commandFile, this.startupCommand.args)
         return this.processTable.waitToFinish(pid)
+    }
+
+    public async interrupt(): Promise<void> {
+        await this.processTable.sendGroupSignal(null, SIGINT)
     }
 
     private getFile(path: string): File {

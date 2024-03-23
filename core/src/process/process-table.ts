@@ -8,11 +8,19 @@ import type { Signal } from 'process/signal'
 export class ProcessTable {
     private readonly processes: Map<number, Process>
     private nextPid: number
+    private foregroundProcessGroup = 0
   
     public constructor(initContext: ExecutionContext) {
         this.processes = new Map()
         this.processes.set(INIT_PID, initProcess(this, initContext))
         this.nextPid = INIT_PID + 1
+    }
+
+    public get foregroundPgid(): number {
+        return this.foregroundProcessGroup
+    }
+    public set foregroundPgid(value: number) {
+        this.foregroundProcessGroup = value
     }
   
     public startProcess(parent: Process | null, file: File, args: readonly string[]): number {
@@ -40,8 +48,13 @@ export class ProcessTable {
         await this.getProcess(pid).sendSignal(signal)
     }
 
-    public async sendGroupSignal(pgid: number, signal: Signal): Promise<void> {
-        await Promise.all(this.getProcesses(p => p.pgid === pgid).map(async p => p.sendSignal(signal)))
+    public async sendGroupSignal(pgid: number | null, signal: Signal): Promise<void> {
+        const group = pgid ?? this.foregroundProcessGroup
+        await Promise.all(this.getProcesses(p => p.pgid === group).map(async p => p.sendSignal(signal)))
+    }
+
+    public updateProcessGroup(pid: number, pgid: number): void {
+        this.getProcess(pid).pgid = pgid
     }
 
     private deleteProcess(pid: number): void {
