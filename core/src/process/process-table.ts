@@ -32,12 +32,23 @@ export class ProcessTable {
 
     public async waitToFinish(pid: number): Promise<number> {
         const result = await this.getProcess(pid).waitToFinish()
-        this.finalizeProcess(pid)
+        this.deleteProcess(pid)
         return result
     }
 
     public async sendSignal(pid: number, signal: Signal): Promise<void> {
         await this.getProcess(pid).sendSignal(signal)
+    }
+
+    public async sendGroupSignal(pgid: number, signal: Signal): Promise<void> {
+        await Promise.all(this.getProcesses(p => p.pgid === pgid).map(async p => p.sendSignal(signal)))
+    }
+
+    private deleteProcess(pid: number): void {
+        this.processes.delete(pid)
+        for (const child of this.getProcesses(p => p.ppid === pid)) {
+            child.ppid = INIT_PID
+        }
     }
 
     private getProcess(pid: number): Process {
@@ -48,12 +59,7 @@ export class ProcessTable {
         return init
     }
 
-    private finalizeProcess(killedProcessId: number): void {
-        this.processes.delete(killedProcessId)
-        for (const child of this.processes.values()) {
-            if (child.ppid === killedProcessId) {
-                child.ppid = INIT_PID
-            }
-        }
+    private getProcesses(predicate: (p: Process) => boolean): Process[] {
+        return [...this.processes.values()].filter(predicate)
     }
 }

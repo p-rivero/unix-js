@@ -5,7 +5,7 @@ import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { ProcessProxy } from 'process/process-proxy'
 import type { ProcessTable } from 'process/process-table'
-import type { Signal } from 'process/signal'
+import { SIGKILL, type Signal } from 'process/signal'
 
 export type ProcessState = 'spawn' | 'running' | 'zombie'
 
@@ -102,6 +102,10 @@ export class Process {
             throw new InternalError('The process is not running')
         }
         if (this.state === 'zombie') {
+            return
+        }
+        if (signal === SIGKILL) {
+            this.exitCode = SIGKILL.exitCode
             return
         }
         try {

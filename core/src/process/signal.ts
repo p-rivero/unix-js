@@ -19,3 +19,4 @@ export class Signal {
 }
 
 export const SIGINT = new Signal('SIGINT', 2, true)
+export const SIGKILL = new Signal('SIGKILL', 9, true)

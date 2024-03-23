@@ -23,7 +23,7 @@ export interface BinaryFileDTO extends FileDTO {
 
 function defaultSignalHandler(process: ProcessProxy, signal: Signal): void {
     if (signal.terminateByDefault) {
-        process.exit(128 + signal.number)
+        process.exit(signal.exitCode)
     }
 }
 
