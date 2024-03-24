@@ -1,8 +1,8 @@
 import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
-import type { ProcessProxy } from 'process/process-proxy'
-import type { Signal } from 'process/signal'
+import type { ProcessProxy } from 'processes/process-proxy'
+import type { Signal } from 'processes/signal'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
 

@@ -2,8 +2,8 @@ import { InvalidArgument } from 'errors'
 import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
-import { ProcessTable } from 'process/process-table'
-import { SIGINT } from 'process/signal'
+import { ProcessTable } from 'processes/process-table'
+import { SIGINT } from 'processes/signal'
 
 export interface ShellConfigStartup {
     readonly absolutePath: string

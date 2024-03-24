@@ -2,8 +2,8 @@ import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
-import type { Process } from 'process/process'
-import type { ProcessTable } from 'process/process-table'
+import type { Process } from 'processes/process'
+import type { ProcessTable } from 'processes/process-table'
 
 type GetPendingError = () => number | undefined
 
@@ -135,6 +135,16 @@ export class ProcessProxy {
         if (background) {
             return pid
         }
+        return this.table.waitToFinish(pid)
+    }
+    
+    /**
+     * Waits for a process to finish.
+     * @param pid The process ID of the process to wait for
+     * @returns The exit code of the process
+     */
+    public async wait(pid: number): Promise<number> {
+        this.checkInterrupted()
         return this.table.waitToFinish(pid)
     }
 

@@ -1,11 +1,11 @@
-import assert from 'assert'
 import { InternalError } from 'errors'
 import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
-import { ProcessProxy } from 'process/process-proxy'
-import type { ProcessTable } from 'process/process-table'
-import { SIGKILL, type Signal } from 'process/signal'
+import { ProcessProxy } from 'processes/process-proxy'
+import type { ProcessTable } from 'processes/process-table'
+import { SIGKILL, type Signal } from 'processes/signal'
+import { assert } from 'utils'
 
 export type ProcessState = 'spawn' | 'running' | 'zombie'
 

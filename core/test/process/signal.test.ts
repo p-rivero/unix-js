@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { SIGINT } from 'process/signal'
+import { SIGINT } from 'processes/signal'
 
 test('signal is initialized correctly', () => {
     expect(SIGINT.number).toBe(2)

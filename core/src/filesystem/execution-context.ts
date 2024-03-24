@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { InternalError, InvalidArgument } from 'errors'
 import { Directory, type DirectoryDTO } from 'filesystem/directories/directory'
 import { RootDirectory } from 'filesystem/directories/root-directory'
@@ -6,6 +5,7 @@ import { DeviceFile } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 import { FilesystemPath } from 'filesystem/filesystem-path'
+import { assert } from 'utils'
 
 
 export class ExecutionContext {

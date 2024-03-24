@@ -8,7 +8,7 @@ import { BinaryFile } from 'filesystem/files/binary-file'
 import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
 import type { File } from 'filesystem/files/file'
 import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
-import type { ProcessProxy } from 'process/process-proxy'
+import type { ProcessProxy } from 'processes/process-proxy'
 
 const parent = new RootDirectory({
     name: 'test',

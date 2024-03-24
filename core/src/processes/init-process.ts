@@ -1,7 +1,7 @@
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileDTO } from 'filesystem/files/binary-file'
-import { Process } from 'process/process'
-import type { ProcessTable } from 'process/process-table'
+import { Process } from 'processes/process'
+import type { ProcessTable } from 'processes/process-table'
 
 export const INIT_PID = 1
 export const INIT_PPID = 0

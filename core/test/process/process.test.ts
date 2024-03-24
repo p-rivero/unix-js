@@ -5,8 +5,8 @@ import { expect, test } from 'bun:test'
 import { NoSuchProcess } from 'errors/process'
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
-import { ProcessTable } from 'process/process-table'
-import { SIGINT } from 'process/signal'
+import { ProcessTable } from 'processes/process-table'
+import { SIGINT } from 'processes/signal'
 
 function getContext(): ExecutionContext {
     const context = new ExecutionContext({

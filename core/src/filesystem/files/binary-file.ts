@@ -2,8 +2,8 @@ import { PermissionDenied } from 'errors'
 import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
 import type { Directory } from 'filesystem/directories/directory'
 import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
-import type { ProcessProxy } from 'process/process-proxy'
-import type { Signal } from 'process/signal'
+import type { ProcessProxy } from 'processes/process-proxy'
+import type { Signal } from 'processes/signal'
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- We want to allow user functions to return void
 export type ExecutableRet = void | number | undefined
