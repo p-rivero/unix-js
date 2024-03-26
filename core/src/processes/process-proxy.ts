@@ -107,9 +107,10 @@ export class ProcessProxy {
      * @param code The exit code to return (default: 0)
      */
     public exit(code = 0): never {
-        this.checkInterrupted()
+        const pendingCode = this.getPendingError()
+        const firstCode = pendingCode ?? code
         // eslint-disable-next-line @typescript-eslint/no-throw-literal -- It's better for ProgramExit not to extend Error
-        throw new ProgramExit(code)
+        throw new ProgramExit(firstCode)
     }
 
     /**
