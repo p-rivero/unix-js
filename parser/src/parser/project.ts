@@ -1,8 +1,9 @@
-import { parseDirectory } from 'parser/directory'
+import { parseRootDirectory } from 'parser/directory-root'
 import { FileFlags } from 'parser/file-flags'
+import type { GlobalSettingsMetadata } from 'parser/metadata'
 import type { ShellConfig, UnixConfig } from 'unix-core'
 
-function getShellConfig(): ShellConfig {
+function getShellConfig(settings: GlobalSettingsMetadata): ShellConfig {
     return {
         // TODO: use PATH env variable to pass command directories
         // commandDirectories: FileFlags.get('isCommandDir').getPaths('directory'),
@@ -23,15 +24,16 @@ function getShellConfig(): ShellConfig {
         startupCommand: {
             absolutePath: FileFlags.get('isStartupCommand').getSinglePath('file'),
             args: []
-        }
+        },
+        echoCtrlC: settings.echoCtrlC ?? true
     }
 }
 
 export async function parseProject(rootDirectoryPath: string): Promise<UnixConfig> {
-    const filesystemRoot = await parseDirectory(null, rootDirectoryPath)
+    const [filesystemRoot, globalSettings] = await parseRootDirectory(rootDirectoryPath)
     return {
         filesystemRoot,
         homePath: FileFlags.get('isHomeDir').getSinglePath('directory'),
-        shell: getShellConfig()
+        shell: getShellConfig(globalSettings)
     }
 }

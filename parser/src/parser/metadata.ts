@@ -10,6 +10,10 @@ export interface UnixJSMetadata {
     readonly ignore?: boolean
 }
 
+export interface GlobalSettingsMetadata {
+    readonly echoCtrlC?: boolean
+}
+
 /** @see {isFileMetadata} ts-auto-guard:type-guard */
 export interface FileMetadata extends UnixJSMetadata {
     readonly fileType?: 'text' | 'binary' | 'device'
@@ -24,6 +28,7 @@ export interface FileMetadata extends UnixJSMetadata {
 export interface DirectoryMetadata extends UnixJSMetadata {
     readonly isCommandDir?: boolean
     readonly isHomeDir?: boolean
+    readonly globalSettings?: GlobalSettingsMetadata
 }
 
 export function getMetadata<T>(filePath: string, validator: (obj: unknown) => obj is T): T | null {

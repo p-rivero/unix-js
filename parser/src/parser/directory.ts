@@ -10,19 +10,12 @@ import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-core'
 export async function parseDirectory(parent: FileInfo | null, directoryPath: string): Promise<DirectoryDTO> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}
     if (metadata.ignore === true) {
-        if (parent === null) {
-            throw new ParserError('Root directory cannot be ignored.')
-        }
         throw new SkipMetadataFile()
     }
 
     const directory = new FileInfo(parent, directoryPath, metadata.displayName)
     directory.setFlagIfTrue('isHomeDir', metadata.isHomeDir)
     directory.setFlagIfTrue('isCommandDir', metadata.isCommandDir)
-
-    if (parent === null && metadata.displayName !== undefined) {
-        printWarning(`Root directory (${directoryPath}) has a display name (${metadata.displayName}), which will be ignored.`)
-    }
 
     return {
         type: 'directory',

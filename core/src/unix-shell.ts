@@ -18,6 +18,7 @@ export interface ShellConfigStandardStream {
 export interface ShellConfig {
     readonly standardStreams: ShellConfigStandardStream[]
     readonly startupCommand: ShellConfigStartup
+    readonly echoCtrlC: boolean
 }
 
 export interface UnixConfig {
@@ -30,6 +31,7 @@ export class UnixShell {
     private readonly context: ExecutionContext
     private readonly startupCommand: ShellConfigStartup
     private readonly processTable: ProcessTable
+    private readonly echoCtrlC: boolean
 
     public constructor(config: UnixConfig) {
         this.context = new ExecutionContext(config.filesystemRoot, config.homePath)
@@ -39,6 +41,7 @@ export class UnixShell {
         }
         this.processTable = new ProcessTable(this.context)
         this.startupCommand = config.shell.startupCommand
+        this.echoCtrlC = config.shell.echoCtrlC
     }
 
     public async start(): Promise<number> {
@@ -48,6 +51,9 @@ export class UnixShell {
     }
 
     public async interrupt(): Promise<void> {
+        if (this.echoCtrlC) {
+            await this.context.getFileStream(0).write('^C')
+        }
         await this.processTable.sendGroupSignal(null, SIGINT)
     }
 
