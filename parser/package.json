@@ -37,7 +37,7 @@
     "prepublishOnly": "bun bundle",
     "bundle": "bun generate-type-guards && bun typecheck && bun bundle:build && bun bundle:copy-resources && bun bundle:postprocess",
     "bundle:build": "bun build src/index.ts --target=node --outdir dist -e typescript -e terser -e ts-command-line-args -e colors --minify",
-    "bundle:copy-resources": "cp src/serialize/default-template.js dist/default-template.js",
+    "bundle:copy-resources": "cp src/serialize/template-*.js dist",
     "bundle:postprocess": "sed -i '1s;^;#!/usr/bin/env node\\n;' dist/index.js",
     "generate-type-guards": "ts-auto-guard --paths src/**/*.ts",
     "typecheck": "tsc --noEmit"

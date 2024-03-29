@@ -50,6 +50,13 @@ export function isDirectoryMetadata(obj: unknown): obj is DirectoryMetadata {
             typedObj["isCommandDir"] === true) &&
         (typeof typedObj["isHomeDir"] === "undefined" ||
             typedObj["isHomeDir"] === false ||
-            typedObj["isHomeDir"] === true)
+            typedObj["isHomeDir"] === true) &&
+        (typeof typedObj["globalSettings"] === "undefined" ||
+            (typedObj["globalSettings"] !== null &&
+                typeof typedObj["globalSettings"] === "object" ||
+                typeof typedObj["globalSettings"] === "function") &&
+            (typeof typedObj["globalSettings"]["echoCtrlC"] === "undefined" ||
+                typedObj["globalSettings"]["echoCtrlC"] === false ||
+                typedObj["globalSettings"]["echoCtrlC"] === true))
     )
 }
