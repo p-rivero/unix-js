@@ -21,7 +21,7 @@ export class InternalError extends UnixJsError {
 export class InvalidArgument extends UnixJsError {
     public constructor(message: string) {
         super(`Incorrect argument: ${message}`, 22, 'EINVAL', 'Invalid argument')
-        this.name = 'IncorrectDeclaration'
+        this.name = 'InvalidArgument'
     }
 }
 

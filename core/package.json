@@ -12,9 +12,9 @@
   },
   "exports": {
     ".": {
-      "default": "./dist/index.js",
       "sourcemap": "./dist/index.js.map",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "devDependencies": {
