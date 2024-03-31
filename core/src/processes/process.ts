@@ -4,7 +4,7 @@ import type { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { ProcessProxy } from 'processes/process-proxy'
 import type { ProcessTable } from 'processes/process-table'
-import { SIGKILL, type Signal } from 'processes/signal'
+import { Signal } from 'processes/signal'
 import { assert } from 'utils'
 
 export type ProcessState = 'spawn' | 'running' | 'zombie'
@@ -104,8 +104,8 @@ export class Process {
         if (this.state === 'zombie') {
             return
         }
-        if (signal === SIGKILL) {
-            this.exitCode = SIGKILL.exitCode
+        if (signal === Signal.SIGKILL) {
+            this.exitCode = Signal.SIGKILL.exitCode
             return
         }
         try {

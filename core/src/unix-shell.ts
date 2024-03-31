@@ -3,7 +3,7 @@ import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { ProcessTable } from 'processes/process-table'
-import { SIGINT } from 'processes/signal'
+import { Signal } from 'processes/signal'
 
 export interface ShellConfigStartup {
     readonly absolutePath: string
@@ -54,7 +54,7 @@ export class UnixShell {
         if (this.echoCtrlC) {
             await this.context.getFileStream(0).write('^C')
         }
-        await this.processTable.sendGroupSignal(null, SIGINT)
+        await this.processTable.sendGroupSignal(null, Signal.SIGINT)
     }
 
     private getFile(path: string): File {

@@ -74,6 +74,14 @@ export class ProcessProxy {
     }
 
     /**
+     * Gets the current working directory of this process.
+     */
+    public get currentWorkingDirectory(): FilesystemNode {
+        this.checkInterrupted()
+        return this.context.currentWorkingDirectory
+    }
+
+    /**
      * Resolves a path, which can be relative to the PWD or absolute.  
      * @throws NoSuchFileOrDirectory if the path does not exist
      * @throws NotADirectory if trying to get the child of a file

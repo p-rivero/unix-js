@@ -1,7 +1,8 @@
 export * from 'filesystem/constants'
-export { ExecutionContext } from 'filesystem/execution-context'
+export type { ExecutionContext } from 'filesystem/execution-context'
 
-export { ProcessProxy as Process } from 'processes/process-proxy'
+export type { ProcessProxy as Process } from 'processes/process-proxy'
+export { Signal } from 'processes/signal'
 export { UnixShell } from 'unix-shell'
 export type { UnixConfig } from 'unix-shell'
 

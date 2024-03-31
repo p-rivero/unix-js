@@ -6,7 +6,7 @@ import { NoSuchProcess } from 'errors/process'
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
 import { ProcessTable } from 'processes/process-table'
-import { SIGINT } from 'processes/signal'
+import { Signal } from 'processes/signal'
 
 function getContext(): ExecutionContext {
     const context = new ExecutionContext({
@@ -103,7 +103,7 @@ test('can interrupt a looping process', async() => {
         execute: async() => infiniteLoop()
     })
     const pid = table.startProcess(null, loopForever, [])
-    await table.sendSignal(pid, SIGINT)
+    await table.sendSignal(pid, Signal.SIGINT)
     const result = await table.waitToFinish(pid)
     expect(result).toBe(130)
 
@@ -115,7 +115,7 @@ test('can interrupt a looping process', async() => {
         }
     })
     const pid2 = table.startProcess(null, withSignalHandler, [])
-    await table.sendSignal(pid2, SIGINT)
+    await table.sendSignal(pid2, Signal.SIGINT)
     const result2 = await table.waitToFinish(pid2)
     expect(result2).toBe(12)
 })
@@ -134,10 +134,10 @@ test('zombie processes never execute signal handlers', async() => {
         }
     })
     const pid = table.startProcess(null, bin, [])
-    expect(async() => table.sendSignal(pid, SIGINT)).toThrow(new Error('should not be called'))
-    expect(async() => table.sendSignal(pid, SIGINT)).toThrow(new Error('should not be called'))
+    expect(async() => table.sendSignal(pid, Signal.SIGINT)).toThrow(new Error('should not be called'))
+    expect(async() => table.sendSignal(pid, Signal.SIGINT)).toThrow(new Error('should not be called'))
     while (!done) {
         await wait(1)
     }
-    expect(async() => table.sendSignal(pid, SIGINT)).not.toThrow()
+    expect(async() => table.sendSignal(pid, Signal.SIGINT)).not.toThrow()
 })
