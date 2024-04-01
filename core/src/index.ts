@@ -1,5 +1,8 @@
+export * from 'errors'
 export * from 'filesystem/constants'
+export type { Directory } from 'filesystem/directories/directory'
 export type { ExecutionContext } from 'filesystem/execution-context'
+export type { File } from 'filesystem/files/file'
 
 export type { ProcessProxy as Process } from 'processes/process-proxy'
 export { Signal } from 'processes/signal'

@@ -158,24 +158,30 @@ export class ProcessProxy {
     }
 
     /**
-     * Updates the process group of a process. This method should only be used by the shell, 
-     * do not call it unless you know what you're doing.
-     * @param pid The process ID of the process to update
-     * @param pgid The new process group ID
+     * @private
+     * Direct access to the underlying process. Reserved for shell implementations, do not use it unless you know what you're doing.
      */
-    public updateProcessGroup(pid: number, pgid: number): void {
+    public get _process(): Process {
         this.checkInterrupted()
-        this.table.updateProcessGroup(pid, pgid)
+        return this.process
     }
 
     /**
-     * Updates the foreground process group. This method should only be used by the shell, 
-     * do not call it unless you know what you're doing.
-     * @param pgid The new foreground process group ID
+     * @private
+     * Direct access to the underlying process table. Reserved for shell implementations, do not use it unless you know what you're doing.
      */
-    public updateForegroundProcessGroup(pgid: number): void {
+    public get _table(): ProcessTable {
         this.checkInterrupted()
-        this.table.foregroundPgid = pgid
+        return this.table
+    }
+
+    /**
+     * @private
+     * Direct access to the underlying execution context. Reserved for shell implementations, do not use it unless you know what you're doing.
+     */
+    public get _context(): ExecutionContext {
+        this.checkInterrupted()
+        return this.context
     }
 
     private checkInterrupted(): void {
