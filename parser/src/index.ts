@@ -1,7 +1,7 @@
 import { OUT_FILE_STDOUT, parseCliArgs } from 'cli-arguments'
 import fs from 'fs'
 import { parseProject } from 'parser/project'
-import { serializeWithTemplate } from 'serialize/serialize-with-template'
+import { serializeWithFormat } from 'serialize/serialize-with-format'
 
 function writeFile(path: string, content: string): void {
     const outDir = path.split('/').slice(0, -1).join('/')
@@ -12,7 +12,7 @@ function writeFile(path: string, content: string): void {
 const options = parseCliArgs()
 try {
     const result = await parseProject(options.inputDir)
-    const resultString = serializeWithTemplate(result, options.template, options.indent)
+    const resultString = serializeWithFormat(result, options.outFormat, options.indent)
     
     if (options.outFile === OUT_FILE_STDOUT) {
         console.log(resultString)

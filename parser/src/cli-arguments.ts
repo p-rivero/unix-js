@@ -3,7 +3,7 @@ import { parse } from 'ts-command-line-args'
 export interface CliArguments {
     readonly inputDir: string
     readonly outFile: string
-    readonly template: string
+    readonly outFormat: string
     readonly indent: number
     readonly help: boolean
 }
@@ -26,12 +26,11 @@ export function parseCliArgs(): CliArguments {
                 description: 'The output file where the results will be written. Defaults to stdout.',
                 defaultValue: OUT_FILE_STDOUT
             },
-            template: {
+            outFormat: {
                 type: String,
-                alias: 't',
-                description: 'Template file to use for outputting the result. Can be one of the following: CommonJS, Module, <custom template path>\n'
-                    + 'The custom template is a .js/.ts file that contains the text "[RESULT]" as a placeholder. Defaults to CommonJS.',
-                defaultValue: 'CommonJs'
+                alias: 'f',
+                description: 'Format of the generated file. Can be one of: CommonJS, ESM. Defaults to ESM.',
+                defaultValue: 'ESM'
             },
             indent: {
                 type: Number,

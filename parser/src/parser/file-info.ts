@@ -7,7 +7,7 @@ export class FileInfo {
     public readonly name: string
     public readonly displayPath: string
 
-    public constructor(parent: FileInfo | null, realPath: string, displayName: string|undefined) {
+    public constructor(parent: FileInfo | null, realPath: string, displayName: string | undefined) {
         this.realPath = realPath
         this.name = displayName ?? FileInfo.extractName(realPath)
         if (parent !== null) {
