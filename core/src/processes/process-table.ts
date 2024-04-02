@@ -8,12 +8,14 @@ import type { Signal } from 'processes/signal'
 export class ProcessTable {
     private readonly processes: Map<number, Process>
     private nextPid: number
-    private foregroundProcessGroup = 0
+    private foregroundProcessGroup = INIT_PID
   
     public constructor(initContext: ExecutionContext) {
         this.processes = new Map()
-        this.processes.set(INIT_PID, initProcess(this, initContext))
+        const init = initProcess(this, initContext)
+        this.processes.set(INIT_PID, init)
         this.nextPid = INIT_PID + 1
+        init.start([])
     }
 
     public get foregroundPgid(): number {

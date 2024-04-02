@@ -12,7 +12,10 @@ export function initProcess(table: ProcessTable, context: ExecutionContext): Pro
         type: 'binary-file',
         permissions: 'execute',
         generator: () => ({
-            execute: async() => {
+            execute: () => {
+                // Do nothing
+            },
+            handleSignal: async() => {
                 // TODO: React to SIGCHLD and finalize processes
             }
         })
