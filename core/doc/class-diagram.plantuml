@@ -28,8 +28,7 @@ class File #aaffff {
     permissions: read-only | read-write | execute
     read(): string
     write(content) / append(content)
-    execute(processProxy): number
-    handleSignal(processProxy, signal)
+    getExecutable(): ExecutableMethods
 }
 FilesystemNode <|-- File
 

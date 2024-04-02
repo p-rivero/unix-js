@@ -1,6 +1,7 @@
 import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
-import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
+import type { ExecutableMethods } from 'filesystem/files/executable-types'
+import { File, type FileDTO, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
 
 type ReadFn = (numChars?: number) => string | Promise<string>
 type WriteFn = (content: string) => void | Promise<void>
@@ -37,7 +38,7 @@ export class DeviceFile extends File {
 
     public override implementWrite: ImplementWriteSignature = async content => this.onWrite(content)
 
-    public override implementExecute: ImplementExecuteSignature = () => {
+    public override implementGetExecutable(): ExecutableMethods {
         throw new PermissionDenied()
     }
 }

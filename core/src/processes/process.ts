@@ -1,6 +1,7 @@
 import { InternalError } from 'errors'
 import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
+import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import type { File } from 'filesystem/files/file'
 import { ProcessProxy } from 'processes/process-proxy'
 import type { ProcessTable } from 'processes/process-table'
@@ -20,9 +21,10 @@ export interface ProcessParams {
 export class Process {
     public readonly pid: number
     private readonly file: File
+    private readonly methods: ExecutableMethods
     public readonly executionContext: ExecutionContext
     private readonly proxy: ProcessProxy
-    private executionPromise: Promise<number> | undefined = undefined
+    private started = false
     private exitCode: number | undefined = undefined
     private exception: Error | undefined = undefined
     private processGroup: number
@@ -35,6 +37,7 @@ export class Process {
         this.executionContext = params.context
         this.proxy = new ProcessProxy(this, table, params.context, () => this.exitCode)
         this.file = params.file
+        this.methods = params.file.getExecutable()
     }
 
     public get pgid(): number {
@@ -51,7 +54,7 @@ export class Process {
     }
 
     public get state(): ProcessState {
-        if (this.executionPromise === undefined) {
+        if (!this.started) {
             return 'spawn'
         }
         if (this.exitCode === undefined && this.exception === undefined) {
@@ -64,9 +67,9 @@ export class Process {
         if (this.state !== 'spawn') {
             throw new InternalError('The process is already running')
         }
-        this.executionPromise = this.file.execute(this.proxy, args)
+        this.started = true
 
-        this.executionPromise
+        this.runExecutable(args)
             .then(exitCode => {
                 this.exitCode = exitCode 
             })
@@ -109,7 +112,7 @@ export class Process {
             return
         }
         try {
-            await this.file.handleSignal(this.proxy, signal)
+            await this.runHandler(signal)
         } catch (e) {
             if (e instanceof ProgramExit) {
                 this.exitCode = e.exitCode
@@ -119,4 +122,22 @@ export class Process {
         }
     }
 
+    private async runExecutable(args: readonly string[]): Promise<number> {
+        const result = await this.methods.execute(this.proxy, [this.file.absolutePath, ...args])
+        return result ?? 0
+    }
+
+    private async runHandler(signal: Signal): Promise<void> {
+        if (this.methods.handleSignal) {
+            await this.methods.handleSignal(this.proxy, signal)
+        } else {
+            Process.defaultSignalHandler(this.proxy, signal)
+        }
+    }
+
+    private static defaultSignalHandler(process: ProcessProxy, signal: Signal): void {
+        if (signal.terminateByDefault) {
+            process.exit(signal.exitCode)
+        }
+    }
 }

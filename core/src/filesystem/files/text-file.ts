@@ -1,5 +1,6 @@
 import type { Directory } from 'filesystem/directories/directory'
-import { File, type FileDTO, type ImplementExecuteSignature, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
+import type { ExecutableMethods } from 'filesystem/files/executable-types'
+import { File, type FileDTO, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
 
 export interface TextFileDTO extends FileDTO {
     readonly type: 'text-file'
@@ -33,8 +34,11 @@ export class TextFile extends File {
         }
     }
 
-    public override implementExecute: ImplementExecuteSignature = async context => {
-        await context.stdout.write(this.content)
-        return 0
+    public override implementGetExecutable(): ExecutableMethods {
+        return {
+            execute: async process => {
+                await process.stdout.write(this.content)
+            }
+        }
     }
 }

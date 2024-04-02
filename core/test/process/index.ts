@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-constant-condition, no-await-in-loop */
     
 import { ExecutionContext } from 'filesystem/execution-context'
-import { BinaryFile, type BinaryFileMethods } from 'filesystem/files/binary-file'
+import { BinaryFile } from 'filesystem/files/binary-file'
+import type { ExecutableGenerator, ExecutableMethods } from 'filesystem/files/executable-types'
 
 export function getContext(): ExecutionContext {
     const context = new ExecutionContext({
@@ -17,7 +18,7 @@ export function getContext(): ExecutionContext {
     return context
 }
 
-export function createBinary(context: ExecutionContext, methods: BinaryFileMethods | (() => BinaryFileMethods)): BinaryFile {
+export function createBinary(context: ExecutionContext, methods: ExecutableMethods | ExecutableGenerator): BinaryFile {
     const parent = context.resolvePath('/').asDirectory()
     return new BinaryFile({
         name: 'someBinary',

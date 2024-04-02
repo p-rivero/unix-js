@@ -1,34 +1,18 @@
 import assert from 'assert'
-import { expect, mock, test } from 'bun:test'
+import { expect, test } from 'bun:test'
 import { InvalidArgument, PermissionDenied } from 'errors'
 import { NoSuchFileOrDirectory } from 'errors/filesystem'
 import type { DirectoryDTO } from 'filesystem/directories/directory'
 import { RootDirectory } from 'filesystem/directories/root-directory'
 import { BinaryFile } from 'filesystem/files/binary-file'
 import { DeviceFile, type DeviceFileDTO } from 'filesystem/files/device-file'
-import type { File } from 'filesystem/files/file'
 import { TextFile, type TextFileDTO } from 'filesystem/files/text-file'
-import type { ProcessProxy } from 'processes/process-proxy'
 
 const parent = new RootDirectory({
     name: 'test',
     type: 'directory',
     children: []
 })
-
-function mockProcess(): ProcessProxy {
-    function mockStream(): File {
-        return {
-            read: mock(() => ''),
-            write: mock(() => '')
-        } as unknown as File
-    }
-    return {
-        stdin: mockStream(),
-        stdout: mockStream(),
-        stderr: mockStream()
-    } as unknown as ProcessProxy
-}
 
 test('file must have valid name', () => {
     function makeFile(name: string): TextFile {
@@ -164,36 +148,6 @@ test('supports binary files', async() => {
     expect(file.writable).toEqual(true)
     expect(await file.read()).toEqual('\n** Binary file **\n')
     expect(file.write('foo')).rejects.toThrow(new PermissionDenied())
-})
-
-test('binary files can be executable', async() => {
-    const dto: DirectoryDTO = {
-        name: 'root-dir',
-        type: 'directory',
-        children: [
-            {
-                name: 'bin-file',
-                type: 'binary-file',
-                permissions: 'execute',
-                generator: () => ({
-                    execute: async(streams, args) => {
-                        expect(args).toEqual(['/bin-file', 'a', 'b'])
-                        await streams.stdout.write('Hello World')
-                        return 123
-                    }
-                })
-            }
-        ]
-    }
-    const file = new RootDirectory(dto).getChild('bin-file')
-    assert(file instanceof BinaryFile)
-    expect(await file.read()).toEqual('\n** Binary file **\n')
-    expect(file.write('foo')).rejects.toThrow(new PermissionDenied())
-
-    const process = mockProcess()
-    expect(await file.execute(process, ['a', 'b'])).toEqual(123)
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(process.stdout.write).toHaveBeenCalledTimes(1)
 })
 
 test('readline from text file', async() => {

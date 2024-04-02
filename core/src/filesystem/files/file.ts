@@ -1,8 +1,7 @@
 import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
+import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
-import type { ProcessProxy } from 'processes/process-proxy'
-import type { Signal } from 'processes/signal'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
 
@@ -12,7 +11,6 @@ export interface FileDTO extends FilesystemNodeDTO {
 
 export type ImplementReadSignature = (range?: [number, number]) => Promise<string>
 export type ImplementWriteSignature = (content: string, position: number | undefined, truncate: boolean) => Promise<void>
-export type ImplementExecuteSignature = (process: ProcessProxy, args: string[]) => Promise<number>
 
 export class FileHandle {
     private readonly file: File
@@ -91,6 +89,7 @@ export abstract class File extends FilesystemNode {
         }
         return this.implementRead()
     }
+    protected abstract implementRead: ImplementReadSignature
 
     public async write(content: string, append = false): Promise<void> {
         if (!this.writable) {
@@ -99,28 +98,17 @@ export abstract class File extends FilesystemNode {
         const overwriteFrom = append ? undefined : 0
         await this.implementWrite(content, overwriteFrom, true)
     }
+    protected abstract implementWrite: ImplementWriteSignature
 
     public async append(content: string): Promise<void> {
         await this.write(content, true)
     }
 
-    public async execute(process: ProcessProxy, args: readonly string[]): Promise<number> {
+    public getExecutable(): ExecutableMethods {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementExecute(process, [this.absolutePath, ...args])
+        return this.implementGetExecutable()
     }
-
-    // eslint-disable-next-line @typescript-eslint/require-await -- This method is meant to be overridden
-    public async handleSignal(_process: ProcessProxy, _signal: Signal): Promise<void> {
-        if (!this.executable) {
-            throw new PermissionDenied()
-        }
-    }
-
-    protected abstract implementRead: ImplementReadSignature
-
-    protected abstract implementWrite: ImplementWriteSignature
-
-    protected abstract implementExecute: ImplementExecuteSignature
+    protected abstract implementGetExecutable(): ExecutableMethods
 }
