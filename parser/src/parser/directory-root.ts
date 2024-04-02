@@ -1,13 +1,13 @@
 import { ParserError, printWarning } from 'parser'
 import { parseDirectory } from 'parser/directory'
-import { getMetadata, type GlobalSettingsMetadata } from 'parser/metadata'
+import { getMetadata, shouldSkipFile, type GlobalSettingsMetadata } from 'parser/metadata'
 import { isDirectoryMetadata } from 'parser/metadata.guard'
 
 import type { DirectoryDTO } from 'unix-core'
 
 export async function parseRootDirectory(directoryPath: string): Promise<[DirectoryDTO, GlobalSettingsMetadata]> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}
-    if (metadata.ignore === true) {
+    if (shouldSkipFile(metadata)) {
         throw new ParserError('Root directory cannot be ignored.')
     }
     if (metadata.displayName !== undefined) {

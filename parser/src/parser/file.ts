@@ -1,9 +1,9 @@
 
 import fs from 'fs'
-import { SkipMetadataFile, printWarning } from 'parser'
+import { SkipFile, printWarning } from 'parser'
 import { parseBinaryFile, parseDeviceFile } from 'parser/executable-file'
 import { FileInfo } from 'parser/file-info'
-import { METADATA_EXTENSION, getMetadata } from 'parser/metadata'
+import { METADATA_EXTENSION, getMetadata, shouldSkipFile } from 'parser/metadata'
 import { isFileMetadata } from 'parser/metadata.guard'
 
 import type { FilePermission, FilesystemNodeChildDTO } from 'unix-core'
@@ -26,11 +26,11 @@ function filterDeviceFilePermissions(permissions: FilePermission | undefined, fi
 
 export async function parseFile(parent: FileInfo, filePath: string): Promise<FilesystemNodeChildDTO> {
     if (filePath.endsWith(METADATA_EXTENSION)) {
-        throw new SkipMetadataFile()
+        throw new SkipFile()
     }
     const metadata = getMetadata(filePath, isFileMetadata) ?? {}
-    if (metadata.ignore === true) {
-        throw new SkipMetadataFile()
+    if (shouldSkipFile(metadata)) {
+        throw new SkipFile()
     }
 
     const file = new FileInfo(parent, filePath, metadata.displayName)

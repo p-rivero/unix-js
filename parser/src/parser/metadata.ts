@@ -8,6 +8,7 @@ export interface UnixJSMetadata {
     readonly displayName?: string
     readonly accessType?: AccessType
     readonly ignore?: boolean
+    readonly includeIfDefined?: string
 }
 
 export interface GlobalSettingsMetadata {
@@ -52,3 +53,12 @@ export function getMetadata<T>(filePath: string, validator: (obj: unknown) => ob
     }
 }
 
+export function shouldSkipFile(metadata: UnixJSMetadata): boolean {
+    if (metadata.ignore === true) {
+        return true
+    }
+    if (metadata.includeIfDefined !== undefined) {
+        return process.env[metadata.includeIfDefined] === undefined
+    }
+    return false
+}

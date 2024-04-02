@@ -1,16 +1,16 @@
 import fs from 'fs'
-import { ParserError, ParserWarning, SkipMetadataFile, printWarning } from 'parser'
+import { ParserError, ParserWarning, SkipFile, printWarning } from 'parser'
 import { parseFile } from 'parser/file'
 import { FileInfo } from 'parser/file-info'
-import { getMetadata } from 'parser/metadata'
+import { getMetadata, shouldSkipFile } from 'parser/metadata'
 import { isDirectoryMetadata } from 'parser/metadata.guard'
 
 import type { DirectoryDTO, FilesystemNodeChildDTO } from 'unix-core'
 
 export async function parseDirectory(parent: FileInfo | null, directoryPath: string): Promise<DirectoryDTO> {
     const metadata = getMetadata(`${directoryPath}/`, isDirectoryMetadata) ?? {}
-    if (metadata.ignore === true) {
-        throw new SkipMetadataFile()
+    if (shouldSkipFile(metadata)) {
+        throw new SkipFile()
     }
 
     const directory = new FileInfo(parent, directoryPath, metadata.displayName)
@@ -37,7 +37,7 @@ async function parseChildren(directory: FileInfo): Promise<FilesystemNodeChildDT
                 results.push(await parseFile(directory, path))
             }
         } catch (e) {
-            if (e instanceof SkipMetadataFile) {
+            if (e instanceof SkipFile) {
                 // Skip silently 
             } else if (e instanceof ParserWarning) {
                 printWarning(e.message)
