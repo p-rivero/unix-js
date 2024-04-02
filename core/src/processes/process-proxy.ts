@@ -109,6 +109,14 @@ export class ProcessProxy {
         this.checkInterrupted()
         return this.process.pid
     }
+    
+    /**
+     * Gets the process group ID of the current process.
+     */
+    public get pgid(): number {
+        this.checkInterrupted()
+        return this.process.pgid
+    }
 
     /**
      * Stops execution of the current process.

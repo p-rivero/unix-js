@@ -57,8 +57,7 @@ export class ExecutionContext {
     }
 
     public changeDirectory(path: string, allowHidden = false): void {
-        const pathObj = new FilesystemPath(path)
-        this.currentDirectory = this.baseDirectory(pathObj).resolvePath(pathObj.parts, allowHidden).asDirectory()
+        this.currentDirectory = this.resolvePath(path, allowHidden).asDirectory()
     }
 
     public createPipe(): [File, File] {
