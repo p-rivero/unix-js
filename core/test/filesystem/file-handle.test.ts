@@ -32,8 +32,6 @@ test('can read and write entire file without opening', async() => {
     expect(await file.read()).toEqual('old text new text')
     await file.write('Hello World')
     expect(await file.read()).toEqual('Hello World')
-    await file.append('!!')
-    expect(await file.read()).toEqual('Hello World!!')
 })
 
 test('can open text file', async() => {

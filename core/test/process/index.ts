@@ -3,6 +3,7 @@
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile } from 'filesystem/files/binary-file'
 import type { ExecutableGenerator, ExecutableMethods } from 'filesystem/files/executable-types'
+import { sleep } from 'utils'
 
 export function getContext(): ExecutionContext {
     const context = new ExecutionContext({
@@ -28,14 +29,8 @@ export function createBinary(context: ExecutionContext, methods: ExecutableMetho
     }, parent)
 }
 
-export async function wait(timeMs: number): Promise<void> {
-    await new Promise((resolve) => {
-        setTimeout(resolve, timeMs) 
-    })
-}
-
 export async function infiniteLoop(): Promise<never> {
     while (true) {
-        await wait(100)
+        await sleep(100)
     }
 }

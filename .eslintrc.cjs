@@ -51,5 +51,6 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': [ 'warn', { 'allowExpressions': true } ],
     '@typescript-eslint/member-ordering': 'off',
     '@typescript-eslint/no-confusing-void-expression': 'off',
+    '@typescript-eslint/unified-signatures': 'off',
   }
 }

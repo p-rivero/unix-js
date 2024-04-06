@@ -99,11 +99,7 @@ export abstract class File extends FilesystemNode {
         await this.implementWrite(content, overwriteFrom, true)
     }
     protected abstract implementWrite: ImplementWriteSignature
-
-    public async append(content: string): Promise<void> {
-        await this.write(content, true)
-    }
-
+    
     public getExecutable(): ExecutableMethods {
         if (!this.executable) {
             throw new PermissionDenied()

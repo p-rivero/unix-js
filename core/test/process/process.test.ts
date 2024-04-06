@@ -1,7 +1,8 @@
 import { expect, test } from 'bun:test'
 import { NoSuchProcess } from 'errors/process'
 import { ProcessTable } from 'processes/process-table'
-import { createBinary, getContext, wait } from '.'
+import { sleep } from 'utils'
+import { createBinary, getContext } from '.'
 
 test('can execute simple binaries 1', async() => {
     const context = getContext()
@@ -56,7 +57,7 @@ test('thrown exceptions are re-raised to the parent', () => {
     const table = new ProcessTable(context)
     const bin = createBinary(context, {
         execute: async() => {
-            await wait(10)
+            await sleep(10)
             throw new Error('I failed')
         }
     })

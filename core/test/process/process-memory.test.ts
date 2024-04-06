@@ -4,7 +4,8 @@ import { expect, test } from 'bun:test'
 import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { Signal } from 'index'
 import { ProcessTable } from 'processes/process-table'
-import { createBinary, getContext, wait } from '.'
+import { sleep } from 'utils'
+import { createBinary, getContext } from '.'
 
 function testBinCode(): ExecutableMethods {
     let str = '1'
@@ -12,7 +13,7 @@ function testBinCode(): ExecutableMethods {
         execute: async(_process, args) => {
             str += args[1]
             while (str.length < 3) {
-                await wait(10)
+                await sleep(10)
             }
             str += '4'
             return Number(str)
@@ -28,7 +29,7 @@ test('main method and signal handler share memory', async() => {
     const table = new ProcessTable(context)
     const bin = createBinary(context, testBinCode)
     const pid = table.startProcess(null, bin, ['9'])
-    await wait(10)
+    await sleep(10)
     await table.sendSignal(pid, Signal.SIGINT)
     const result = await table.waitToFinish(pid)
     expect(result).toBe(1984)
@@ -40,7 +41,7 @@ test('each process has its own memory', async() => {
     const bin = createBinary(context, testBinCode)
     const pid1 = table.startProcess(null, bin, ['9'])
     const pid2 = table.startProcess(null, bin, ['2'])
-    await wait(10)
+    await sleep(10)
     await table.sendSignal(pid1, Signal.SIGINT)
     await table.sendSignal(pid2, Signal.SIGINT)
     const result1 = await table.waitToFinish(pid1)

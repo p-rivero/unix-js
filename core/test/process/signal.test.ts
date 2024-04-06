@@ -3,13 +3,18 @@
 import { expect, test } from 'bun:test'
 import { ProcessTable } from 'processes/process-table'
 import { Signal } from 'processes/signal'
-import { createBinary, getContext, infiniteLoop, wait } from '.'
+import { sleep } from 'utils'
+import { createBinary, getContext, infiniteLoop } from '.'
 
 test('signal is initialized correctly', () => {
     expect(Signal.SIGINT.number).toBe(2)
     expect(Signal.SIGINT.name).toBe('SIGINT')
-    expect(Signal.SIGINT.terminateByDefault).toBe(true)
+    expect(Signal.SIGINT.defaultAction).toBe('terminate')
     expect(Signal.SIGINT.exitCode).toBe(130)
+
+    expect(Signal.SIGCHLD.defaultAction).toBe('ignore')
+    expect(Signal.SIGSTOP.defaultAction).toBe('stop')
+    expect(Signal.SIGCONT.defaultAction).toBe('continue')
 })
 
 test('can interrupt a looping process', async() => {
@@ -42,7 +47,7 @@ test('zombie processes never execute signal handlers', async() => {
     let done = false
     const bin = createBinary(context, {
         execute: async() => {
-            await wait(10)
+            await sleep(10)
             done = true
         },
         handleSignal: () => {
@@ -53,7 +58,7 @@ test('zombie processes never execute signal handlers', async() => {
     expect(async() => table.sendSignal(pid, Signal.SIGINT)).toThrow(new Error('should not be called'))
     expect(async() => table.sendSignal(pid, Signal.SIGINT)).toThrow(new Error('should not be called'))
     while (!done) {
-        await wait(1)
+        await sleep(1)
     }
     expect(async() => table.sendSignal(pid, Signal.SIGINT)).not.toThrow()
 })
