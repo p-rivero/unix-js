@@ -2,7 +2,7 @@ import { ProgramExit } from 'errors/process'
 import { DirectoryProxy } from 'filesystem/directories/directory-proxy'
 import type { ExecutionContext } from 'filesystem/execution-context'
 import { FileProxy } from 'filesystem/files/file-proxy'
-import { FilesystemNodeProxy } from 'filesystem/filesystem-node-proxy'
+import type { FilesystemNodeProxy } from 'filesystem/filesystem-node-proxy'
 import type { Process } from 'processes/process'
 import type { ProcessTable } from 'processes/process-table'
 import { sleep } from 'utils'
@@ -86,7 +86,7 @@ export class ProcessProxy {
     }
 
     /**
-     * Resolves a path, which can be relative to the PWD or absolute.
+     * Resolves a path, which can be absolute (/foo/bar), relative to the PWD (foo/bar) or relative to home (~/foo/bar).
      * @param includeHidden If `true`, hidden files and directories will be included in the search.
      * Use that option when performing internal operations that should not be visible to the user.  
      * If `false` (default), only user-visible files directories will be returned.
@@ -96,7 +96,7 @@ export class ProcessProxy {
      */
     public resolvePath(path: string, allowHidden = false): FilesystemNodeProxy {
         const node = this.context.resolvePath(path, allowHidden)
-        return FilesystemNodeProxy.wrap(node, async() => this.checkInterrupted())
+        return DirectoryProxy.wrap(node, async() => this.checkInterrupted())
     }
 
     /**

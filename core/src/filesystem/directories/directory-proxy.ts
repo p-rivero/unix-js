@@ -1,4 +1,7 @@
-import type { Directory } from 'filesystem/directories/directory'
+import { Directory } from 'filesystem/directories/directory'
+import { File } from 'filesystem/files/file'
+import { FileProxy } from 'filesystem/files/file-proxy'
+import type { FilesystemNode } from 'filesystem/filesystem-node'
 import { FilesystemNodeProxy } from 'filesystem/filesystem-node-proxy'
 
 export class DirectoryProxy extends FilesystemNodeProxy {
@@ -30,7 +33,7 @@ export class DirectoryProxy extends FilesystemNodeProxy {
      */
     public getChild(name: string, includeHidden = false): FilesystemNodeProxy {
         const child = this.wrapped.getChild(name, includeHidden)
-        return FilesystemNodeProxy.wrap(child, this.checkInterrupted)
+        return DirectoryProxy.wrap(child, this.checkInterrupted)
     }
 
     /**
@@ -41,4 +44,16 @@ export class DirectoryProxy extends FilesystemNodeProxy {
         return this.wrapped
     }
 
+    /**
+     * @private
+     * User programs don't need to call this method.
+     */
+    public static wrap(node: FilesystemNode, checkInterrupted: () => Promise<void>): FilesystemNodeProxy {
+        if (node instanceof Directory) {
+            return new DirectoryProxy(node, checkInterrupted)
+        } else if (node instanceof File) {
+            return new FileProxy(node, checkInterrupted)
+        } 
+        throw new Error('Unknown filesystem node type')
+    }
 }

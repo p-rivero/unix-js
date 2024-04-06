@@ -1,6 +1,4 @@
-import { Directory } from 'filesystem/directories/directory'
 import { DirectoryProxy } from 'filesystem/directories/directory-proxy'
-import { File } from 'filesystem/files/file'
 import { FileProxy } from 'filesystem/files/file-proxy'
 import type { FilesystemNode } from 'filesystem/filesystem-node'
 
@@ -11,19 +9,6 @@ export abstract class FilesystemNodeProxy {
     protected constructor(wrapped: FilesystemNode, checkInterrupted: () => Promise<void>) {
         this.wrapped = wrapped
         this.checkInterrupted = checkInterrupted
-    }
-
-    /**
-     * @private
-     * User programs don't need to call this method.
-     */
-    public static wrap(node: FilesystemNode, checkInterrupted: () => Promise<void>): FilesystemNodeProxy {
-        if (node instanceof Directory) {
-            return new DirectoryProxy(node, checkInterrupted)
-        } else if (node instanceof File) {
-            return new FileProxy(node, checkInterrupted)
-        } 
-        throw new Error('Unknown filesystem node type')
     }
 
     /**
