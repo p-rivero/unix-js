@@ -29,10 +29,12 @@ test('can interrupt a looping process', async() => {
     expect(result).toBe(130)
 
     const withSignalHandler = createBinary(context, {
-        execute: async() => infiniteLoop(),
-        handleSignal: (process, signal) => {
-            expect(signal.name).toBe('SIGINT')
-            process.exit(12)
+        execute: async(p) => {
+            p.registerSignalHandler(Signal.SIGINT, (process, signal) => {
+                expect(signal.name).toBe('SIGINT')
+                process.exit(12)
+            })
+            await infiniteLoop()
         }
     })
     const pid2 = table.startProcess(null, withSignalHandler, [])
@@ -46,12 +48,12 @@ test('zombie processes never execute signal handlers', async() => {
     const table = new ProcessTable(context)
     let done = false
     const bin = createBinary(context, {
-        execute: async() => {
+        execute: async(p) => {
+            p.registerSignalHandler(Signal.SIGINT, () => {
+                throw new Error('should not be called')
+            })
             await sleep(10)
             done = true
-        },
-        handleSignal: () => {
-            throw new Error('should not be called')
         }
     })
     const pid = table.startProcess(null, bin, [])

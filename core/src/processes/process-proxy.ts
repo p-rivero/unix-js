@@ -1,10 +1,12 @@
 import { ProgramExit } from 'errors/process'
 import { DirectoryProxy } from 'filesystem/directories/directory-proxy'
 import type { ExecutionContext } from 'filesystem/execution-context'
+import type { SignalHandler } from 'filesystem/files/executable-types'
 import { FileProxy } from 'filesystem/files/file-proxy'
 import type { FilesystemNodeProxy } from 'filesystem/filesystem-node-proxy'
 import type { Process } from 'processes/process'
 import type { ProcessTable } from 'processes/process-table'
+import type { Signal } from 'processes/signal'
 import { sleep } from 'utils'
 
 interface PollMethods {
@@ -176,17 +178,23 @@ export class ProcessProxy {
     }
 
     /**
-     * Halts execution until resume() is called or a SIGCONT signal is received.
+     * Registers a signal handler for the current process.
+     * @param signal The signal to handle
+     * @param handler The function to call when the signal is received
      */
-    public stop(): void {
-        this.process.stop()
+    public registerSignalHandler(signal: Signal, handler: SignalHandler): void {
+        this.process.registerSignalHandler(signal, handler)
     }
 
     /**
-     * Resumes execution if the process was stopped. Otherwise, does nothing.
+     * Sends a signal to a process.
+     * @param pid The process ID of the process to signal
+     * @param signal The signal to send
      */
-    public resume(): void {
-        this.process.resume()
+    public async sendSignal(pid: number, signal: Signal): Promise<void> {
+        await this.checkInterrupted()
+        await this.table.sendSignal(pid, signal)
+        await this.checkInterrupted()
     }
 
     /**

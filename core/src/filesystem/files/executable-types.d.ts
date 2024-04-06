@@ -6,7 +6,8 @@ export type ExecutableRet = void | number | undefined
 
 export interface ExecutableMethods {
     execute: (process: ProcessProxy, args: string[]) => ExecutableRet | Promise<ExecutableRet>
-    handleSignal?: (process: ProcessProxy, signal: Signal) => void | Promise<void>
 }
 
 export type ExecutableGenerator = () => ExecutableMethods
+
+export type SignalHandler = (process: ProcessProxy, signal: Signal) => void | Promise<void>

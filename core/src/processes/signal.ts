@@ -7,6 +7,10 @@ export class Signal {
     public readonly number: number
     public readonly defaultAction: SignalDefaultAction
 
+    /**
+     * Do not use the constructor directly.  
+     * Use the predefined signals instead (`Signal.SIGHUP`, `Signal.SIGINT`, etc.)
+     */
     private constructor(name: string, number: number, defaultAction: SignalDefaultAction) {
         this.name = name
         this.number = number

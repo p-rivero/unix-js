@@ -1,7 +1,7 @@
 import { InternalError } from 'errors'
 import { ProgramExit } from 'errors/process'
 import type { ExecutionContext } from 'filesystem/execution-context'
-import type { ExecutableMethods } from 'filesystem/files/executable-types'
+import type { ExecutableMethods, SignalHandler } from 'filesystem/files/executable-types'
 import type { File } from 'filesystem/files/file'
 import { ProcessProxy } from 'processes/process-proxy'
 import type { ProcessTable } from 'processes/process-table'
@@ -30,6 +30,7 @@ export class Process {
     private readonly methods: ExecutableMethods
     public readonly executionContext: ExecutionContext
     private readonly proxy: ProcessProxy
+    private readonly signalHandlers: Record<number, SignalHandler | undefined> = {}
     private started = false
     private stopped = false
     private exitResult: number | Error | undefined = undefined
@@ -114,6 +115,10 @@ export class Process {
         }
         return this.exitResult
     }
+
+    public registerSignalHandler(signal: Signal, handler: SignalHandler): void {
+        this.signalHandlers[signal.number] = handler
+    }
     
     public async sendSignal(signal: Signal): Promise<void> {
         if (this.state === 'spawn') {
@@ -154,25 +159,26 @@ export class Process {
     }
 
     private async runHandler(signal: Signal): Promise<void> {
-        if (this.methods.handleSignal) {
-            await this.methods.handleSignal(this.proxy, signal)
+        const handler = this.signalHandlers[signal.number]
+        if (handler) {
+            await handler(this.proxy, signal)
         } else {
-            Process.defaultSignalHandler(this.proxy, signal)
+            this.defaultSignalHandler(signal)
         }
     }
 
-    private static defaultSignalHandler(process: ProcessProxy, signal: Signal): void {
+    private defaultSignalHandler(signal: Signal): void {
         switch (signal.defaultAction) {
             case 'ignore':
                 return
             case 'stop':
-                process.stop()
+                this.stop()
                 return
             case 'continue':
-                process.resume()
+                this.resume()
                 return
             case 'terminate':
-                process.exit(signal.exitCode)
+                this.proxy.exit(signal.exitCode)
         }
     }
 }
