@@ -8,7 +8,7 @@ import type { ProcessTable } from 'processes/process-table'
 import { sleep } from 'utils'
 
 interface PollMethods {
-    getPendingError: () => number | undefined
+    getPendingError: () => number | Error | undefined
     isStopped: () => boolean
 }
 
@@ -129,6 +129,9 @@ export class ProcessProxy {
     public exit(code = 0): never {
         const pendingCode = this.methods.getPendingError()
         const firstCode = pendingCode ?? code
+        if (firstCode instanceof Error) {
+            throw firstCode
+        }
         // eslint-disable-next-line @typescript-eslint/no-throw-literal -- It's better for ProgramExit not to extend Error
         throw new ProgramExit(firstCode)
     }
@@ -216,7 +219,9 @@ export class ProcessProxy {
             await sleep(100)
         }
         const pendingError = this.methods.getPendingError()
-        if (pendingError !== undefined) {
+        if (pendingError instanceof Error) {
+            throw pendingError
+        } else if (pendingError !== undefined) {
             this.exit(pendingError)
         }
     }

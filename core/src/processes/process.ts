@@ -18,43 +18,51 @@ export interface ProcessParams {
     readonly file: File
 }
 
+interface ProcessIds {
+    readonly pid: number
+    ppid: number
+    pgid: number
+}
+
 export class Process {
-    public readonly pid: number
+    private readonly ids: ProcessIds
     private readonly file: File
     private readonly methods: ExecutableMethods
     public readonly executionContext: ExecutionContext
     private readonly proxy: ProcessProxy
     private started = false
     private stopped = false
-    private exitCode: number | undefined = undefined
-    private exception: Error | undefined = undefined
-    private processGroup: number
-    private parentPid: number
+    private exitResult: number | Error | undefined = undefined
 
     public constructor(table: ProcessTable, params: ProcessParams) {
-        this.pid = params.pid
-        this.parentPid = params.ppid
-        this.processGroup = params.pgid
+        this.ids = {
+            pid: params.pid,
+            ppid: params.ppid,
+            pgid: params.pgid
+        }
         this.executionContext = params.context
         this.proxy = new ProcessProxy(this, table, params.context, {
-            getPendingError: () => this.exitCode,
+            getPendingError: () => this.exitResult,
             isStopped: () => this.state === 'stopped'
         })
         this.file = params.file
         this.methods = params.file.getExecutable()
     }
 
+    public get pid(): number {
+        return this.ids.pid
+    }
     public get pgid(): number {
-        return this.processGroup
+        return this.ids.pgid
     }
     public set pgid(value: number) {
-        this.processGroup = value
+        this.ids.pgid = value
     }
     public get ppid(): number {
-        return this.parentPid
+        return this.ids.ppid
     }
     public set ppid(value: number) {
-        this.parentPid = value
+        this.ids.ppid = value
     }
 
     public get state(): ProcessState {
@@ -64,7 +72,7 @@ export class Process {
         if (this.stopped) {
             return 'stopped'
         }
-        if (this.exitCode === undefined && this.exception === undefined) {
+        if (this.exitResult === undefined) {
             return 'running'
         }
         return 'zombie'
@@ -78,13 +86,15 @@ export class Process {
 
         this.runExecutable(args)
             .then(exitCode => {
-                this.exitCode = exitCode 
+                this.exitResult = exitCode 
             })
             .catch(e => {
                 if (e instanceof ProgramExit) {
-                    this.exitCode = e.exitCode
+                    this.exitResult = e.exitCode
+                } else if (e instanceof Error) {
+                    this.exitResult = e
                 } else {
-                    this.exception = e as Error
+                    throw e
                 }
             })
     }
@@ -97,12 +107,12 @@ export class Process {
             // eslint-disable-next-line no-await-in-loop -- Busy waiting here is intentional
             await sleep(20)
         }
+        assert(this.exitResult !== undefined)
 
-        if (this.exception !== undefined) {
-            throw this.exception
+        if (this.exitResult instanceof Error) {
+            throw this.exitResult
         }
-        assert(this.exitCode !== undefined)
-        return this.exitCode
+        return this.exitResult
     }
     
     public async sendSignal(signal: Signal): Promise<void> {
@@ -113,7 +123,7 @@ export class Process {
             return
         }
         if (signal === Signal.SIGKILL) {
-            this.exitCode = Signal.SIGKILL.exitCode
+            this.exitResult = Signal.SIGKILL.exitCode
             return
         }
         if (signal === Signal.SIGSTOP) {
@@ -124,7 +134,7 @@ export class Process {
             await this.runHandler(signal)
         } catch (e) {
             if (e instanceof ProgramExit) {
-                this.exitCode = e.exitCode
+                this.exitResult = e.exitCode
                 return
             }
             throw e
