@@ -85,6 +85,13 @@ export class FileProxy extends FilesystemNodeProxy {
     }
 
     /**
+     * Returns a file handle that can be used to seek/read/write parts of the file, instead of reading/writing the entire content.
+     */
+    public open(): FileHandleProxy {
+        return new FileHandleProxy(this.wrapped.open(), this.checkInterrupted)
+    }
+
+    /**
      * Reads the entire content of the file (or executes the `read` method if the file is a device).
      * @returns The content of the file
      */
