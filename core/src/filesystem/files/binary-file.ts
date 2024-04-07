@@ -3,6 +3,7 @@ import { BINARY_FILE_REPRESENTATION } from 'filesystem/constants'
 import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutableGenerator, ExecutableMethods } from 'filesystem/files/executable-types'
 import { File, type FileDTO, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
+import type { ProcessProxy } from 'processes/process-proxy'
 
 export interface BinaryFileDTO extends FileDTO {
     readonly type: 'binary-file'
@@ -24,7 +25,7 @@ export class BinaryFile extends File {
         throw new PermissionDenied()
     }
 
-    public override implementGetExecutable(): ExecutableMethods {
-        return this.generator()
+    public override implementGetExecutable(process: ProcessProxy): ExecutableMethods {
+        return this.generator(process)
     }
 }

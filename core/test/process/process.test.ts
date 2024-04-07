@@ -8,7 +8,7 @@ test('can execute simple binaries 1', async() => {
     const context = getContext()
     const table = new ProcessTable(context)
     const noOp = createBinary(context, {
-        execute: (_process, args) => {
+        execute: (args) => {
             expect(args).toEqual(['/someBinary'])
         }
     })
@@ -27,7 +27,7 @@ test('can execute simple binaries 2', async() => {
     const context = getContext()
     const table = new ProcessTable(context)
     const addArgs = createBinary(context, {
-        execute: (_process, args) => args.slice(1).map(Number).reduce((a, b) => a + b)
+        execute: (args) => args.slice(1).map(Number).reduce((a, b) => a + b)
     })
     const pid = table.startProcess(null, addArgs, ['1', '2', '3'])
     expect(pid).toBe(2)
@@ -39,12 +39,12 @@ test('can execute simple binaries 2', async() => {
 test('process can write to stdout', async() => {
     const context = getContext()
     const table = new ProcessTable(context)
-    const bin = createBinary(context, {
-        execute: async(process, args) => {
+    const bin = createBinary(context, process => ({
+        execute: async(args) => {
             await process.stdout.write(`I got the args: ${args.join(' ')}`)
             process.exit(42)
         }
-    })
+    }))
     const pid = table.startProcess(null, bin, ['foo', 'bar'])
     const result = await table.waitToFinish(pid)
     expect(result).toBe(42)

@@ -1,0 +1,7 @@
+{
+    "fileType": "device",
+    "displayName": "SomeDevice",
+    "isStdin": true,
+    "isStdout": true,
+    "isStderr": true
+}

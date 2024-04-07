@@ -1,8 +1,5 @@
 {
-    "fileType": "device",
-    "displayName": "someBinary",
-    "isStdin": true,
-    "isStdout": true,
-    "isStderr": true,
+    "fileType": "binary",
+    "displayName": "SomeBinary",
     "isStartupCommand": true
 }

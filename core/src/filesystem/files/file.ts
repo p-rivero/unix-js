@@ -2,6 +2,7 @@ import { PermissionDenied } from 'errors'
 import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { FilesystemNode, type FilesystemNodeDTO } from 'filesystem/filesystem-node'
+import type { ProcessProxy } from 'processes/process-proxy'
 
 export type FilePermission = 'read-only' | 'read-write' | 'execute'
 
@@ -99,11 +100,11 @@ export abstract class File extends FilesystemNode {
     }
     protected abstract implementWrite: ImplementWriteSignature
     
-    public getExecutable(): ExecutableMethods {
+    public getExecutable(process: ProcessProxy): ExecutableMethods {
         if (!this.executable) {
             throw new PermissionDenied()
         }
-        return this.implementGetExecutable()
+        return this.implementGetExecutable(process)
     }
-    protected abstract implementGetExecutable(): ExecutableMethods
+    protected abstract implementGetExecutable(process: ProcessProxy): ExecutableMethods
 }

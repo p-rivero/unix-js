@@ -1,29 +1,9 @@
 import type { Process } from 'unix-core'
-import { Signal } from 'unix-core'
+declare const process: Process
 
-let A = 'aaa'
-export async function write(a: Process, args: string[]) {
-    A += a
-    await a.stderr.write('stderr')
+const STR = 'Got some args: '
+export async function execute(args: string[]): Promise<void> {
 
-    const B = 'bbb'
-    function execute2() {
-        const C = 'ccc'
-        return A + B + C
-    }
-    return execute2() + execute3() + read()
-}
-
-function execute3() {
-    const D = 'ddd'
-    console.log('execute3')
-    return A + D
-}
-
-function read(a = 30): string {
-    if (a === 0) {
-        return 'b'
-    }
-    Signal.SIGINT.toString()
-    return `${read(a - 1)}a`
+    await process.stdout.write(STR + args.join(' '))
+    await process.stdout.write('\n')
 }

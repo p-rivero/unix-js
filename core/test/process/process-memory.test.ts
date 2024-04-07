@@ -1,14 +1,15 @@
 import { expect, test } from 'bun:test'
 import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { Signal } from 'index'
+import type { ProcessProxy } from 'processes/process-proxy'
 import { ProcessTable } from 'processes/process-table'
 import { sleep } from 'utils'
 import { createBinary, getContext } from '.'
 
-function testBinCode(): ExecutableMethods {
+function testBinCode(process: ProcessProxy): ExecutableMethods {
     let str = '1'
     return {
-        execute: async(process, args) => {
+        execute: async(args) => {
             process.registerSignalHandler(Signal.SIGALRM, () => {
                 str += '8'
             })

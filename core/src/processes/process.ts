@@ -50,7 +50,7 @@ export class Process {
             isStopped: () => this.state === 'stopped'
         })
         this.file = params.file
-        this.methods = params.file.getExecutable()
+        this.methods = params.file.getExecutable(this.proxy)
     }
 
     public get pid(): number {
@@ -157,7 +157,7 @@ export class Process {
     }
 
     private async runExecutable(args: readonly string[]): Promise<number> {
-        const result = await this.methods.execute(this.proxy, [this.file.absolutePath, ...args])
+        const result = await this.methods.execute([this.file.absolutePath, ...args])
         return result ?? 0
     }
 
@@ -165,7 +165,7 @@ export class Process {
         const handler = this.signalHandlers[signal.number]
         try {
             if (handler) {
-                await handler(this.proxy, signal)
+                await handler(signal)
             } else {
                 await this.defaultSignalHandler(signal)
             }

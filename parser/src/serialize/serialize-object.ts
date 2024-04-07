@@ -7,8 +7,9 @@ function replaceSuffix(str: string, suffix: string, newSuffix: string): string {
 }
 
 function normalizeAnonymousFunction(code: string): string {
-    const str = replacePrefix(code, 'function anonymous(require=()=>{}\n) {\n', '()=>{')
-    return replaceSuffix(str, '\n}', '}')
+    let replaced = replacePrefix(code, 'function anonymous(process,require=()=>{}\n) {\n', '(process)=>{')
+    replaced = replacePrefix(replaced, 'function anonymous(require=()=>{}\n) {\n', '()=>{')
+    return replaceSuffix(replaced, '\n}', '}')
 }
 
 export function serializeObject(obj: unknown, indent: number): string {

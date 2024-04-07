@@ -5,9 +5,9 @@ import type { Signal } from 'processes/signal'
 export type ExecutableRet = void | number | undefined
 
 export interface ExecutableMethods {
-    execute: (process: ProcessProxy, args: string[]) => ExecutableRet | Promise<ExecutableRet>
+    execute: (args: string[]) => ExecutableRet | Promise<ExecutableRet>
 }
 
-export type ExecutableGenerator = () => ExecutableMethods
+export type ExecutableGenerator = (process: ProcessProxy) => ExecutableMethods
 
-export type SignalHandler = (process: ProcessProxy, signal: Signal) => void | Promise<void>
+export type SignalHandler = (signal: Signal) => void | Promise<void>

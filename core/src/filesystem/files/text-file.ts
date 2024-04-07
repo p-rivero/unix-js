@@ -1,6 +1,7 @@
 import type { Directory } from 'filesystem/directories/directory'
 import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { File, type FileDTO, type ImplementReadSignature, type ImplementWriteSignature } from 'filesystem/files/file'
+import type { ProcessProxy } from 'processes/process-proxy'
 
 export interface TextFileDTO extends FileDTO {
     readonly type: 'text-file'
@@ -34,9 +35,9 @@ export class TextFile extends File {
         }
     }
 
-    public override implementGetExecutable(): ExecutableMethods {
+    public override implementGetExecutable(process: ProcessProxy): ExecutableMethods {
         return {
-            execute: async process => {
+            execute: async() => {
                 await process.stdout.write(this.content)
             }
         }

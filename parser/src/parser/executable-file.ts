@@ -4,6 +4,7 @@ import { isBinaryFileMethods, isDeviceFileMethods } from 'parser/executable-file
 import type { FileInfo } from 'parser/file-info'
 import { minify } from 'terser'
 import ts from 'typescript'
+import type { ExecutableGenerator } from 'unix-core'
 
 /** @see {isBinaryFileMethods} ts-auto-guard:type-guard */
 export interface BinaryFileMethods {
@@ -50,14 +51,18 @@ function wrapSourceCode(file: FileInfo): string {
     `
 }
 
-async function minifyAndCheck(source: string): Promise<unknown> {
+async function minifyAndCheck(source: string, overrideProcess: boolean): Promise<unknown> {
     // eslint-disable-next-line @typescript-eslint/naming-convention, camelcase -- terser uses snake_case
     const { code: minifiedCode } = await minify(source, { parse: { bare_returns: true } })
     if (minifiedCode === undefined) {
         throw new ParserError('Error minifying code')
     }
+    const args = ['require=()=>{}', minifiedCode]
+    if (overrideProcess) {
+        args.unshift('process')
+    }
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func -- cannot be avoided
-    return new Function('require=()=>{}', minifiedCode)
+    return new Function(...args)
 }
 
 function getCodeLine(code: string, line: number): string {
@@ -65,7 +70,7 @@ function getCodeLine(code: string, line: number): string {
     return `\t${lineSrc}\n\t${'^'.repeat(lineSrc.length)}`
 }
 
-async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) => fn is T, validatorFailMsg: string): Promise<() => T> {
+async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) => fn is T, validatorFailMsg: string, overrideProcess: boolean): Promise<() => T> {
     function isGeneratorFunction(fn: unknown): fn is () => T {
         if (typeof fn !== 'function') {
             return false
@@ -75,7 +80,7 @@ async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) =
     }
     const sourceCode: string = wrapSourceCode(file)
     try {
-        const fn = await minifyAndCheck(sourceCode)
+        const fn = await minifyAndCheck(sourceCode, overrideProcess)
         if (isGeneratorFunction(fn)) {
             return fn
         }
@@ -95,10 +100,10 @@ async function parseExecutableFile<T>(file: FileInfo, validator: (fn: unknown) =
 
 export async function parseDeviceFile(file: FileInfo): Promise<() => DeviceFileMethods> {
     const validatorFailMsg = `Invalid device file: ${file.toString()}, make sure it exports the required functions "read" and "write". Ignoring file.`
-    return parseExecutableFile(file, isDeviceFileMethods, validatorFailMsg)
+    return parseExecutableFile(file, isDeviceFileMethods, validatorFailMsg, false)
 }
 
-export async function parseBinaryFile(file: FileInfo): Promise<() => BinaryFileMethods> {
+export async function parseBinaryFile(file: FileInfo): Promise<ExecutableGenerator> {
     const validatorFailMsg = `Invalid binary file: ${file.toString()}, make sure it exports the required function "execute". Ignoring file.`
-    return parseExecutableFile(file, isBinaryFileMethods, validatorFailMsg)
+    return parseExecutableFile(file, isBinaryFileMethods, validatorFailMsg, true)
 }
