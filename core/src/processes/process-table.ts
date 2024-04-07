@@ -2,7 +2,7 @@ import { NoSuchProcess } from 'errors/process'
 import { ExecutionContext } from 'filesystem/execution-context'
 import type { File } from 'filesystem/files/file'
 import { INIT_PID, initProcess } from 'processes/init-process'
-import { Process } from 'processes/process'
+import { Process, type ProcessState } from 'processes/process'
 import type { Signal } from 'processes/signal'
 
 export class ProcessTable {
@@ -38,6 +38,10 @@ export class ProcessTable {
         this.processes.set(processPid, process)
         process.start(args)
         return processPid
+    }
+
+    public getState(pid: number): ProcessState {
+        return this.getProcess(pid).state
     }
 
     public async waitToFinish(pid: number): Promise<number> {

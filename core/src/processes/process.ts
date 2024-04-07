@@ -30,7 +30,10 @@ export class Process {
     private readonly methods: ExecutableMethods
     public readonly executionContext: ExecutionContext
     private readonly proxy: ProcessProxy
+
     private readonly signalHandlers: Record<number, SignalHandler | undefined> = {}
+    private readonly pendingSignalsQueue: Signal[] = []
+
     private started = false
     private stopped = false
     private exitResult: number | Error | undefined = undefined
@@ -105,7 +108,6 @@ export class Process {
             throw new InternalError('The process is not running')
         }
         while (this.state === 'running') {
-            // eslint-disable-next-line no-await-in-loop -- Busy waiting here is intentional
             await sleep(20)
         }
         assert(this.exitResult !== undefined)
@@ -129,28 +131,29 @@ export class Process {
         }
         if (signal === Signal.SIGKILL) {
             this.exitResult = Signal.SIGKILL.exitCode
+            this.stopped = false
             return
         }
         if (signal === Signal.SIGSTOP) {
             this.stopped = true
             return
         }
-        try {
-            await this.runHandler(signal)
-        } catch (e) {
-            if (e instanceof ProgramExit) {
-                this.exitResult = e.exitCode
-                return
-            }
-            throw e
+        if (this.state === 'stopped' && signal !== Signal.SIGCONT) {
+            this.pendingSignalsQueue.push(signal)
+            return
         }
+        await this.runHandler(signal)
     }
 
     public stop(): void {
         this.stopped = true
     }
-    public resume(): void {
+    public async resume(): Promise<void> {
         this.stopped = false
+        for (const signal of this.pendingSignalsQueue) {
+            await this.runHandler(signal)
+        }
+        this.pendingSignalsQueue.length = 0
     }
 
     private async runExecutable(args: readonly string[]): Promise<number> {
@@ -160,14 +163,22 @@ export class Process {
 
     private async runHandler(signal: Signal): Promise<void> {
         const handler = this.signalHandlers[signal.number]
-        if (handler) {
-            await handler(this.proxy, signal)
-        } else {
-            this.defaultSignalHandler(signal)
+        try {
+            if (handler) {
+                await handler(this.proxy, signal)
+            } else {
+                await this.defaultSignalHandler(signal)
+            }
+        } catch (e) {
+            if (e instanceof ProgramExit) {
+                this.exitResult = e.exitCode
+            } else {
+                throw e
+            }
         }
     }
 
-    private defaultSignalHandler(signal: Signal): void {
+    private async defaultSignalHandler(signal: Signal): Promise<void> {
         switch (signal.defaultAction) {
             case 'ignore':
                 return
@@ -175,7 +186,7 @@ export class Process {
                 this.stop()
                 return
             case 'continue':
-                this.resume()
+                await this.resume()
                 return
             case 'terminate':
                 this.proxy.exit(signal.exitCode)

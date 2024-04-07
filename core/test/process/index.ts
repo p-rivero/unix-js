@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-constant-condition, no-await-in-loop */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-constant-condition */
     
 import { ExecutionContext } from 'filesystem/execution-context'
 import { BinaryFile } from 'filesystem/files/binary-file'

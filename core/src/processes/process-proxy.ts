@@ -187,7 +187,11 @@ export class ProcessProxy {
     }
 
     /**
-     * Sends a signal to a process.
+     * Sends a signal to a process. The signal handling depends on the state of the process.
+     * - If the process is a zombie, the signal is ignored. The promise resolves immediately.
+     * - If the process is stopped (and the signal isn't `SIGCONT`), the signal is enqueued to be handled when the
+     * process resumes. The promise resolves immediately.
+     * - Otherwise (the process is running), the returned promise resolves when the signal handler finishes.
      * @param pid The process ID of the process to signal
      * @param signal The signal to send
      */
@@ -223,7 +227,6 @@ export class ProcessProxy {
 
     private async checkInterrupted(): Promise<void> {
         while (this.methods.isStopped()) {
-            // eslint-disable-next-line no-await-in-loop -- Busy waiting here is intentional
             await sleep(100)
         }
         const pendingError = this.methods.getPendingError()

@@ -44,7 +44,6 @@ export class FileHandle {
         let char = await this.read(1)
         while (char !== '\n' && char !== '') {
             content += char
-            // eslint-disable-next-line no-await-in-loop -- cannot be avoided
             char = await this.read(1)
         }
         return content

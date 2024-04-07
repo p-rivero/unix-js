@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop, @typescript-eslint/no-unnecessary-condition, no-unmodified-loop-condition */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-unmodified-loop-condition */
 
 import { expect, test } from 'bun:test'
 import { ProcessTable } from 'processes/process-table'
@@ -21,10 +21,12 @@ test('can interrupt a looping process', async() => {
     const context = getContext()
     const table = new ProcessTable(context)
     const loopForever = createBinary(context, {
-        execute: async() => infiniteLoop()
+        execute: infiniteLoop
     })
     const pid = table.startProcess(null, loopForever, [])
+    expect(table.getState(pid)).toBe('running')
     await table.sendSignal(pid, Signal.SIGINT)
+    expect(table.getState(pid)).toBe('zombie')
     const result = await table.waitToFinish(pid)
     expect(result).toBe(130)
 
@@ -63,4 +65,68 @@ test('zombie processes never execute signal handlers', async() => {
         await sleep(1)
     }
     expect(async() => table.sendSignal(pid, Signal.SIGINT)).not.toThrow()
+})
+
+test('can stop and resume a process', async() => {
+    const context = getContext()
+    const table = new ProcessTable(context)
+    const bin = createBinary(context, {
+        execute: async(p) => {
+            let done = false
+            p.registerSignalHandler(Signal.SIGALRM, () => {
+                done = true
+            })
+            while (!done) {
+                await sleep(1)
+            }
+        }
+    })
+    const pid = table.startProcess(null, bin, [])
+    await table.sendSignal(pid, Signal.SIGSTOP)
+    await table.sendSignal(pid, Signal.SIGALRM)
+    await sleep(10)
+    expect(table.getState(pid)).toBe('stopped')
+    await table.sendSignal(pid, Signal.SIGCONT)
+    await sleep(10)
+    expect(table.getState(pid)).toBe('zombie')
+})
+
+test('can kill a stopped process', async() => {
+    const context = getContext()
+    const table = new ProcessTable(context)
+    const bin = createBinary(context, {
+        execute: infiniteLoop
+    })
+    const pid = table.startProcess(null, bin, [])
+    await table.sendSignal(pid, Signal.SIGSTOP)
+    expect(table.getState(pid)).toBe('stopped')
+    await table.sendSignal(pid, Signal.SIGKILL)
+    expect(table.getState(pid)).toBe('zombie')
+})
+
+test('interrupt handlers run when process is resumed', async() => {
+    const context = getContext()
+    const table = new ProcessTable(context)
+    let calledHandler = false
+    const bin = createBinary(context, {
+        execute: async(p) => {
+            p.registerSignalHandler(Signal.SIGALRM, async(process) => {
+                calledHandler = true
+                // Deadlock if the handler runs before the process is resumed
+                await process.stdout.write('handler called\n')
+            })
+            while (!calledHandler) {
+                await sleep(1)
+            }
+        }
+    })
+    const pid = table.startProcess(null, bin, [])
+    await table.sendSignal(pid, Signal.SIGSTOP)
+    await table.sendSignal(pid, Signal.SIGALRM)
+    await sleep(10)
+    expect(calledHandler).toBe(false)
+    await table.sendSignal(pid, Signal.SIGCONT)
+    await sleep(10)
+    expect(calledHandler).toBe(true)
+    expect(table.getState(pid)).toBe('zombie')
 })

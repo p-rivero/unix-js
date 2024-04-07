@@ -1,5 +1,3 @@
-/* eslint-disable no-await-in-loop */
-
 import { expect, test } from 'bun:test'
 import type { ExecutableMethods } from 'filesystem/files/executable-types'
 import { Signal } from 'index'
