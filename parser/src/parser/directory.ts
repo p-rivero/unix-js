@@ -15,7 +15,7 @@ export async function parseDirectory(parent: FileInfo | null, directoryPath: str
 
     const directory = new FileInfo(parent, directoryPath, metadata.displayName)
     directory.setFlagIfTrue('isHomeDir', metadata.isHomeDir)
-    directory.setFlagIfTrue('isCommandDir', metadata.isCommandDir)
+    directory.setFlagIfTrue('isCommandPath', metadata.isCommandPath)
 
     return {
         type: 'directory',

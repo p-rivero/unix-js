@@ -10,31 +10,45 @@ import { assert } from 'utils'
 
 export class ExecutionContext {
     public readonly rootDirectory: RootDirectory
-    public readonly homeDirectory: Directory
+    public readonly environmentVariables: Record<string, string>
     private currentDirectory: Directory
     private readonly fileStreams: (File | undefined)[]
     
     public constructor(context: ExecutionContext)
-    public constructor(dto: DirectoryDTO, homePath: string)
-    public constructor(obj: DirectoryDTO | ExecutionContext, homePath?: string) {
+    public constructor(dto: DirectoryDTO, env: Record<string, string>)
+    public constructor(obj: DirectoryDTO | ExecutionContext, env?: Record<string, string>) {
         if (obj instanceof ExecutionContext) {
             this.fileStreams = obj.fileStreams
             this.rootDirectory = obj.rootDirectory
-            this.homeDirectory = obj.homeDirectory
             this.currentDirectory = obj.currentDirectory
+            this.environmentVariables = { ...obj.environmentVariables }
         } else {
-            if (homePath === undefined) {
-                throw new InvalidArgument('The home path must be specified')
+            if (env?.HOME === undefined) {
+                throw new InvalidArgument('The HOME environment variable must be specified')
             }
             this.fileStreams = []
             this.rootDirectory = new RootDirectory(obj)
-            this.homeDirectory = ExecutionContext.getHomeDirectory(this.rootDirectory, homePath)
+            this.environmentVariables = { ...env }
             this.currentDirectory = this.homeDirectory
         }
     }
 
     public get currentWorkingDirectory(): Directory {
         return this.currentDirectory
+    }
+
+    public get homeDirectory(): Directory {
+        const path = new FilesystemPath(this.environmentVariables.HOME)
+        if (!path.isAbsolute) {
+            throw new InvalidArgument(`The home path '${this.environmentVariables.HOME}' must be absolute`)
+        }
+        try {
+            const home = this.rootDirectory.resolvePath(path.parts)
+            assert(home instanceof Directory)
+            return home
+        } catch (error) {
+            throw new InvalidArgument(`The home path '${this.environmentVariables.HOME}' must point to an existing directory`)
+        }
     }
 
     public getFileStream(index: number): File {
@@ -89,20 +103,6 @@ export class ExecutionContext {
         }, this.currentDirectory)
         
         return [pipeIn, pipeOut]
-    }
-    
-    private static getHomeDirectory(root: RootDirectory, homePath: string): Directory {
-        const path = new FilesystemPath(homePath)
-        if (!path.isAbsolute) {
-            throw new InvalidArgument('The home path must be absolute')
-        }
-        try {
-            const home = root.resolvePath(path.parts)
-            assert(home instanceof Directory)
-            return home
-        } catch (error) {
-            throw new InvalidArgument(`The home path '${homePath}' must point to an existing directory`)
-        }
     }
 
     private baseDirectory(path: FilesystemPath): Directory {

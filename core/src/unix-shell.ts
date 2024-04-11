@@ -23,7 +23,7 @@ export interface ShellConfig {
 
 export interface UnixConfig {
     readonly filesystemRoot: DirectoryDTO
-    readonly homePath: string
+    readonly environmentVariables: Record<string, string> & { HOME: string; PATH?: string }
     readonly shell: ShellConfig
 }
 
@@ -34,7 +34,7 @@ export class UnixShell {
     private readonly echoCtrlC: boolean
 
     public constructor(config: UnixConfig) {
-        this.context = new ExecutionContext(config.filesystemRoot, config.homePath)
+        this.context = new ExecutionContext(config.filesystemRoot, config.environmentVariables)
         for (const { index, absolutePath: internalPath } of config.shell.standardStreams) {
             const file = this.getFile(internalPath)
             this.context.setFileStream(index, file)

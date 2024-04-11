@@ -53,5 +53,13 @@ module.exports = {
     '@typescript-eslint/member-ordering': 'off',
     '@typescript-eslint/no-confusing-void-expression': 'off',
     '@typescript-eslint/unified-signatures': 'off',
+    '@typescript-eslint/naming-convention': [ 'warn', {
+      "selector": "property",
+      "format": ["strictCamelCase"],
+      "filter": {
+        "regex": "^(HOME|PATH)$",
+        "match": false,
+      },
+    }],
   }
 }

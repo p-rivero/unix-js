@@ -1,6 +1,6 @@
 {
     "isHomeDir": true,
-    "isCommandDir": true,
+    "isCommandPath": true,
     "globalSettings": {
         "echoCtrlC": false
     }

@@ -35,34 +35,38 @@ const FILESYSTEM_TREE: DirectoryDTO = {
     ]
 }
 
+function getExecutionContext(homeDir: string): ExecutionContext {
+    return new ExecutionContext(FILESYSTEM_TREE, { HOME: homeDir })
+}
+
 test('can initialize ExecutionContext', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(context.currentWorkingDirectory.absolutePath).toEqual('/home/user')
 })
 
 test('home must be a valid directory', () => {
-    expect(() => new ExecutionContext(FILESYSTEM_TREE, '/home/user2'))
+    expect(() => getExecutionContext('/home/user2'))
         .toThrow(new InvalidArgument("The home path '/home/user2' must point to an existing directory"))
     
-    expect(() => new ExecutionContext(FILESYSTEM_TREE, '/home/user/test1.txt'))
+    expect(() => getExecutionContext('/home/user/test1.txt'))
         .toThrow(new InvalidArgument("The home path '/home/user/test1.txt' must point to an existing directory"))
 
-    expect(() => new ExecutionContext(FILESYSTEM_TREE, 'home/user'))
-        .toThrow(new InvalidArgument('The home path must be absolute'))
+    expect(() => getExecutionContext('home/user'))
+        .toThrow(new InvalidArgument("The home path 'home/user' must be absolute"))
 
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home//')
+    const context = getExecutionContext('/home//')
     expect(context.currentWorkingDirectory.absolutePath).toEqual('/home')
 })
 
 test('can resolve simple paths', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(context.resolvePath('test.txt').absolutePath).toEqual('/home/user/test.txt')
     expect(context.resolvePath('./test.txt').isReadable).toEqual(false)
     expect(() => context.resolvePath('test1.txt')).toThrow(new NoSuchFileOrDirectory())
 })
 
 test('can resolve complex paths', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(context.resolvePath('/home/user/').absolutePath).toEqual('/home/user')
     expect(context.resolvePath('../..').absolutePath).toEqual('/')
     expect(context.resolvePath('/').name).toEqual('the-root')
@@ -72,13 +76,13 @@ test('can resolve complex paths', () => {
 })
 
 test('can resolve hidden paths', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(() => context.resolvePath('/home/hidden-user/')).toThrow(new NoSuchFileOrDirectory())
     expect(() => context.resolvePath('/home/hidden-user/', true)).not.toThrow()
 })
 
 test('can change directory', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(context.currentWorkingDirectory).toBe(context.homeDirectory)
 
     context.changeDirectory('/home')
@@ -98,13 +102,13 @@ test('can change directory', () => {
 })
 
 test('can change directory to hidden paths', () => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/home/user')
+    const context = getExecutionContext('/home/user')
     expect(() => context.changeDirectory('/home/hidden-user/')).toThrow(new NoSuchFileOrDirectory())
     expect(() => context.changeDirectory('/home/hidden-user/', true)).not.toThrow()
 })
 
 test('can create pipes', async() => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/')
+    const context = getExecutionContext('/')
     const [pipeIn, pipeOut] = context.createPipe()
     expect(context.rootDirectory.getChildrenNames(true)).toEqual(['.', '..', 'home'])
 
@@ -121,7 +125,7 @@ test('can create pipes', async() => {
 })
 
 test('can read single characters from pipes', async() => {
-    const context = new ExecutionContext(FILESYSTEM_TREE, '/')
+    const context = getExecutionContext('/')
     const [pipeIn, pipeOut] = context.createPipe()
 
     await pipeIn.write('abcd')

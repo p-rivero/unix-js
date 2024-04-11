@@ -5,8 +5,6 @@ import type { ShellConfig, UnixConfig } from 'unix-core'
 
 function getShellConfig(settings: GlobalSettingsMetadata): ShellConfig {
     return {
-        // TODO: use PATH env variable to pass command directories
-        // commandDirectories: FileFlags.get('isCommandDir').getPaths('directory'),
         standardStreams: [
             {
                 index: 0,
@@ -33,7 +31,10 @@ export async function parseProject(rootDirectoryPath: string): Promise<UnixConfi
     const [filesystemRoot, globalSettings] = await parseRootDirectory(rootDirectoryPath)
     return {
         filesystemRoot,
-        homePath: FileFlags.get('isHomeDir').getSinglePath('directory'),
+        environmentVariables: {
+            HOME: FileFlags.get('isHomeDir').getSinglePath('directory'),
+            PATH: FileFlags.get('isCommandPath').getPaths('directory').join(':')
+        },
         shell: getShellConfig(globalSettings)
     }
 }

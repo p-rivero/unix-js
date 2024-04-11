@@ -6,6 +6,7 @@ import type { ExecutableGenerator, ExecutableMethods } from 'filesystem/files/ex
 import { sleep } from 'utils'
 
 export function getContext(): ExecutionContext {
+    const env = { HOME: '/' }
     const context = new ExecutionContext({
         name: 'test',
         type: 'directory',
@@ -14,7 +15,7 @@ export function getContext(): ExecutionContext {
             type: 'text-file',
             content: ''
         }]
-    }, '/')
+    }, env)
     context.setFileStream(1, context.resolvePath('/StdoutFile').asFile())
     return context
 }

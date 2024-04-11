@@ -27,7 +27,7 @@ export interface FileMetadata extends UnixJSMetadata {
 
 /** @see {isDirectoryMetadata} ts-auto-guard:type-guard */
 export interface DirectoryMetadata extends UnixJSMetadata {
-    readonly isCommandDir?: boolean
+    readonly isCommandPath?: boolean
     readonly isHomeDir?: boolean
     readonly globalSettings?: GlobalSettingsMetadata
 }

@@ -1,5 +1,5 @@
 
-export type FlagName = 'isHomeDir' | 'isCommandDir' | 'isStartupCommand' | 'isStdin' | 'isStdout' | 'isStderr'
+export type FlagName = 'isHomeDir' | 'isCommandPath' | 'isStartupCommand' | 'isStdin' | 'isStdout' | 'isStderr'
 
 export class FileFlags {
     private static readonly instances = new Map<FlagName, FileFlags>()

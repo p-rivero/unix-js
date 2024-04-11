@@ -49,9 +49,9 @@ export function isDirectoryMetadata(obj: unknown): obj is DirectoryMetadata {
             typedObj["ignore"] === true) &&
         (typeof typedObj["includeIfDefined"] === "undefined" ||
             typeof typedObj["includeIfDefined"] === "string") &&
-        (typeof typedObj["isCommandDir"] === "undefined" ||
-            typedObj["isCommandDir"] === false ||
-            typedObj["isCommandDir"] === true) &&
+        (typeof typedObj["isCommandPath"] === "undefined" ||
+            typedObj["isCommandPath"] === false ||
+            typedObj["isCommandPath"] === true) &&
         (typeof typedObj["isHomeDir"] === "undefined" ||
             typedObj["isHomeDir"] === false ||
             typedObj["isHomeDir"] === true) &&
