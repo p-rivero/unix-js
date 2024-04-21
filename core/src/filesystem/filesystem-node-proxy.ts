@@ -35,11 +35,25 @@ export abstract class FilesystemNodeProxy {
     }
 
     /**
+     * Returns `true` if `this` is a `File`
+     */
+    public isFile(): this is FileProxy {
+        return this.wrapped.isFile()
+    }
+
+    /**
      * Casts `this` to a `Directory`
      * @throws NotADirectory if `this` is not a `Directory`
      */
     public asDirectory(): DirectoryProxy {
         return new DirectoryProxy(this.wrapped.asDirectory(), this.checkInterrupted)
+    }
+
+    /**
+     * Returns `true` if `this` is a `Directory`
+     */
+    public isDirectory(): this is DirectoryProxy {
+        return this.wrapped.isDirectory()
     }
 
     /**

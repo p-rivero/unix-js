@@ -61,6 +61,13 @@ export class ProcessProxy {
     }
 
     /**
+     * Gets the environment variables of this process.
+     */
+    public get env(): Record<string, string> {
+        return this.context.environmentVariables
+    }
+
+    /**
      * Gets a file stream of this process, given its index.  
      * Usually it's better to use `process.stdin`, `process.stdout` and `process.stderr` directly.
      * @throws InternalError if there is no file stream with the given index

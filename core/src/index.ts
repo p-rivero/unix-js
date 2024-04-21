@@ -3,6 +3,7 @@ export * from 'filesystem/constants'
 
 export type { DirectoryProxy as Directory } from 'filesystem/directories/directory-proxy'
 export type { FileProxy as File } from 'filesystem/files/file-proxy'
+export type { FilesystemNodeProxy as FilesystemNode } from 'filesystem/filesystem-node-proxy'
 export type { ProcessProxy as Process } from 'processes/process-proxy'
 
 export { Signal } from 'processes/signal'

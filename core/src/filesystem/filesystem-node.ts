@@ -45,17 +45,25 @@ export abstract class FilesystemNode {
     }
 
     public asFile(): File {
-        if (this instanceof File) {
+        if (this.isFile()) {
             return this
         }
         throw new IsADirectory()
     }
 
+    public isFile(): this is File {
+        return this instanceof File
+    }
+
     public asDirectory(): Directory {
-        if (this instanceof Directory) {
+        if (this.isDirectory()) {
             return this
         }
         throw new NotADirectory()
+    }
+
+    public isDirectory(): this is Directory {
+        return this instanceof Directory
     }
 
     private assertNameIsValid(): void {
