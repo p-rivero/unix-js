@@ -5,7 +5,9 @@ import { serializeWithFormat } from 'serialize/serialize-with-format'
 
 function writeFile(path: string, content: string): void {
     const outDir = path.split('/').slice(0, -1).join('/')
-    fs.mkdirSync(outDir, { recursive: true })
+    if (outDir) {
+        fs.mkdirSync(outDir, { recursive: true })
+    }
     fs.writeFileSync(path, content)
 }
 
