@@ -151,7 +151,7 @@ export class ProcessProxy {
      * @param args The arguments to pass to the executable
      * @returns The process ID of the new process
      */
-    public execute(executable: FileProxy | string, args: string[], background: true): Promise<number>
+    public execute(executable: FileProxy | string, args: readonly string[], background: true): Promise<number>
 
     /**
      * Spawns a new process and waits for it to finish.
@@ -159,9 +159,9 @@ export class ProcessProxy {
      * @param args The arguments to pass to the executable
      * @returns The exit code of the process
      */
-    public execute(executable: FileProxy | string, args: string[], background: false): Promise<number>
+    public execute(executable: FileProxy | string, args: readonly string[], background: false): Promise<number>
 
-    public async execute(executable: FileProxy | string, args: string[], background: boolean): Promise<number> {
+    public async execute(executable: FileProxy | string, args: readonly string[], background: boolean): Promise<number> {
         await this.checkInterrupted()
         const file = typeof executable === 'string' ? this.resolvePath(executable).asFile() : executable
         // eslint-disable-next-line no-underscore-dangle -- Private API used intentionally
